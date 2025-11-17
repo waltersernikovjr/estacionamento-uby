@@ -1,6 +1,6 @@
 # Desafio Full Stack - Estacionamento da Uby
 
-A Uby está vendo uma oportunidade de implementar um estacionamento digital em Goimylandia, e para isso precisa de um sistema web e back-end para controle das vagas e expiração do estacionamento.
+A Uby está vendo uma oportunidade de implementar um estacionamento digital em Muzambinho, e para isso precisa de um sistema web e back-end para controle das vagas e expiração do estacionamento.
 
 A equipe de análise colheu as informações de como a diretoria espera que o sistema funcione e encaminhou à equipe de desenvolvimento para começar o desenvolvimento da aplicação.
 
