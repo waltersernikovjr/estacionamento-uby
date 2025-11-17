@@ -1,7 +1,3 @@
-Aqui está o texto transformado em **Markdown**, mantendo a estrutura clara e organizada:
-
----
-
 # Desafio Full Stack - Estacionamento da Uby
 
 A Uby está vendo uma oportunidade de implementar um estacionamento digital em Goimylandia, e para isso precisa de um sistema web e back-end para controle das vagas e expiração do estacionamento.
