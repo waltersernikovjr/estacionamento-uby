@@ -107,7 +107,7 @@ Requisitos:
 
 ## Entrega
 
-A prova poderá ser entregue até: **27/11/2025 às 23:59:59**
+A prova poderá ser entregue até: **28/11/2025 às 23:59:59**
 
 ### Como entregar a prova
 
