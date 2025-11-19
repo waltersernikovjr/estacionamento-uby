@@ -49,7 +49,6 @@ class CustomerAuthController extends Controller
             'address_state' => $request->input('state'),
         ]);
 
-        // Send welcome email with verification link
         Mail::to($customer->email)->send(new WelcomeCustomerMail($customer));
 
         $token = $customer->createToken('customer-token')->plainTextToken;

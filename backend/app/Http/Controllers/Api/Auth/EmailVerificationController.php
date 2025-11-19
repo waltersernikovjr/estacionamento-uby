@@ -25,24 +25,20 @@ final class EmailVerificationController extends Controller
     {
         $type = $request->query('type', 'customer');
         
-        // Get the appropriate model
         $user = $type === 'operator' 
             ? Operator::findOrFail($id)
             : Customer::findOrFail($id);
         
-        // Verify hash matches
         if (!hash_equals($hash, sha1($user->email))) {
             return view('email-invalid');
         }
         
-        // Check if already verified
         if ($user->email_verified_at !== null) {
             return view('email-already-verified', [
                 'verified_at' => $user->email_verified_at->format('d/m/Y H:i:s')
             ]);
         }
         
-        // Mark as verified
         $user->email_verified_at = now();
         $user->save();
         
@@ -70,7 +66,6 @@ final class EmailVerificationController extends Controller
         $type = $request->input('type');
         $email = $request->input('email');
         
-        // Find user
         $user = $type === 'operator'
             ? Operator::where('email', $email)->first()
             : Customer::where('email', $email)->first();
@@ -81,14 +76,12 @@ final class EmailVerificationController extends Controller
             ], 404);
         }
         
-        // Check if already verified
         if ($user->email_verified_at !== null) {
             return response()->json([
                 'message' => 'Email já está verificado.'
             ], 400);
         }
         
-        // Send verification email
         $mailClass = $type === 'operator'
             ? \App\Infrastructure\Mail\WelcomeOperatorMail::class
             : \App\Infrastructure\Mail\WelcomeCustomerMail::class;

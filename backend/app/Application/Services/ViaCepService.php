@@ -33,7 +33,6 @@ final class ViaCepService
 
                 $data = $response->json();
 
-                // Check if CEP was not found
                 if (isset($data['erro']) && $data['erro'] === true) {
                     return null;
                 }

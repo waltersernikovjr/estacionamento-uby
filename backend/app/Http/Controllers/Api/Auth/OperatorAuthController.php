@@ -31,7 +31,6 @@ class OperatorAuthController extends Controller
             'phone' => $request->input('phone'),
         ]);
 
-        // Send welcome email with verification link
         Mail::to($operator->email)->send(new WelcomeOperatorMail($operator));
 
         $token = $operator->createToken('operator-token')->plainTextToken;
