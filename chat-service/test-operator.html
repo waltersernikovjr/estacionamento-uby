@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test - Operador</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 900px;
+            height: 700px;
+            display: flex;
+            overflow: hidden;
+        }
+        .container.login-mode {
+            justify-content: center;
+            align-items: center;
+        }
+        .sidebar {
+            width: 300px;
+            min-width: 300px;
+            max-width: 300px;
+            background: #2a2a2a;
+            border-radius: 20px 0 0 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .sidebar-header h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .sidebar-header .badge {
+            background: rgba(255,255,255,0.3);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.3s;
+            z-index: 100;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: none;
+        }
+        .sessions-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .session-item {
+            background: #1a1a1a;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            color: white;
+        }
+        .session-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(255, 106, 0, 0.3);
+            background: #333;
+        }
+        .session-item.active {
+            border-color: #FF6A00;
+            background: #2a2a2a;
+        }
+        .session-item .customer-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .session-item .last-message {
+            font-size: 13px;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .session-item .time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .unread-badge {
+            background: #FF6A00;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header .customer-info h3 {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+        .chat-header .customer-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .status {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #0d0d0d;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .message.me {
+            justify-content: flex-end;
+        }
+        .message .bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        .message.me .bubble {
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.other .bubble {
+            background: #1a1a1a;
+            border: 2px solid #FF6A00;
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+        .message .info {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .typing {
+            padding: 8px 20px;
+            font-size: 13px;
+            color: #999;
+            font-style: italic;
+            min-height: 30px;
+        }
+        .input-area {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #FF6A00;
+        }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .login-form {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+        .login-form h2 {
+            margin-bottom: 30px;
+            color: #FF6A00;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .login-form input {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .login-form input:focus {
+            border-color: #11998e;
+        }
+        .login-form button {
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #666;
+        }
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container login-mode" id="container">
+        <div id="loginForm" class="login-form">
+            <h2>🎧 Painel do Operador</h2>
+            <input type="email" id="email" placeholder="Email (ex: joao@example.com)" value="joao@example.com">
+            <input type="password" id="password" placeholder="Senha" value="senha123">
+            <button onclick="login()">Fazer Login</button>
+        </div>
+
+        <div id="operatorPanel" style="display: none; width: 100%; position: relative;">
+            <button class="logout-btn" onclick="logout()">🚪 Sair</button>
+            <!-- Sidebar com lista de sessões -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3>💬 Conversas</h3>
+                    <div class="badge"><span id="sessionsCount">0</span> ativas</div>
+                </div>
+                <div class="sessions-list" id="sessionsList">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>Nenhuma conversa ativa</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área do chat -->
+            <div class="chat-area">
+                <div id="noChatSelected" class="empty-state">
+                    <div class="icon">💬</div>
+                    <p>Selecione uma conversa para começar</p>
+                </div>
+
+                <div id="chatContent" style="display: none; height: 100%; flex-direction: column;">
+                    <div class="chat-header">
+                        <div class="customer-info">
+                            <h3 id="customerName">Cliente</h3>
+                            <p id="customerEmail">email@example.com</p>
+                        </div>
+                    </div>
+                    <div class="messages" id="messages"></div>
+                    <div class="typing" id="typing"></div>
+                    <div class="input-area">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" placeholder="Digite sua mensagem..." onkeypress="handleKeyPress(event)" maxlength="250">
+                            <button onclick="sendMessage()">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let currentSessionId = null;
+        let userType = 'operator';
+        let userId = null;
+        let sessions = {};
+        let sessionRestored = false; // Flag para evitar restauração múltipla
+
+        // Verificar se há sessão salva ao carregar a página
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedToken = localStorage.getItem('operator_token');
+            const savedUserId = localStorage.getItem('operator_user_id');
+            const savedSessionId = localStorage.getItem('operator_current_session');
+            
+            if (savedToken && savedUserId) {
+                userId = parseInt(savedUserId);
+                currentSessionId = savedSessionId ? parseInt(savedSessionId) : null;
+                
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('operatorPanel').style.display = 'flex';
+                document.getElementById('container').classList.remove('login-mode');
+                
+                connectToChat(savedToken);
+            }
+        });
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const apiUrl = window.location.origin.replace(':8000', '') + ':8000';
+                const response = await fetch(`${apiUrl}/api/v1/operators/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    alert('Login falhou! Verifique suas credenciais.');
+                    return;
+                }
+
+                const data = await response.json();
+                const token = data.token;
+                userId = data.user.id;
+
+                // Salvar no localStorage
+                localStorage.setItem('operator_token', token);
+                localStorage.setItem('operator_user_id', userId);
+
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('operatorPanel').style.display = 'flex';
+                document.getElementById('container').classList.remove('login-mode');
+
+                connectToChat(token);
+            } catch (error) {
+                alert('Erro ao conectar: ' + error.message);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('operator_token');
+            localStorage.removeItem('operator_user_id');
+            localStorage.removeItem('operator_current_session');
+            
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            currentSessionId = null;
+            sessionRestored = false;
+            
+            location.reload();
+        }
+
+        function connectToChat(token) {
+            socket = io(window.location.origin, {
+                auth: { token },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                socket.emit('get-active-sessions');
+            });
+
+            socket.on('active-sessions', ({ sessions: sessionsList }) => {
+                updateSessionsList(sessionsList);
+            });
+
+            socket.on('session-created', ({ sessionId, customerId, customerName }) => {
+                socket.emit('get-active-sessions');
+            });
+
+            socket.on('session-joined', ({ messages }) => {
+                clearMessages();
+                messages.forEach(msg => {
+                    addMessage(msg.message, msg.sender_type === userType, msg.created_at);
+                });
+                
+                socket.emit('mark-as-read', { sessionId: currentSessionId });
+            });
+
+            socket.on('new-message', (data) => {
+                const isMe = data.senderType === userType && data.senderId === userId;
+                
+                if (data.sessionId == currentSessionId) {
+                    addMessage(data.message, isMe, data.createdAt);
+                    
+                    if (!isMe) {
+                        socket.emit('mark-as-read', { sessionId: currentSessionId });
+                        return;
+                    }
+                }
+                
+                socket.emit('get-active-sessions');
+            });
+            
+            socket.on('session-updated', ({ sessionId }) => {
+                socket.emit('get-active-sessions');
+            });
+
+            socket.on('user-typing', ({ isTyping }) => {
+                const typingEl = document.getElementById('typing');
+                typingEl.textContent = isTyping ? 'Cliente está digitando...' : '';
+            });
+
+            socket.on('disconnect', () => {});
+
+            socket.on('error', ({ message }) => {
+                alert('Erro: ' + message);
+            });
+        }
+
+        function updateSessionsList(sessionsList) {
+            const container = document.getElementById('sessionsList');
+            document.getElementById('sessionsCount').textContent = sessionsList.length;
+
+            if (sessionsList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>Nenhuma conversa ativa</p>
+                    </div>
+                `;
+                sessionRestored = true;
+                return;
+            }
+
+            container.innerHTML = sessionsList.map(session => `
+                <div class="session-item ${session.id == currentSessionId ? 'active' : ''}" onclick="selectSession(${session.id}, '${session.customer_name || 'Cliente'}', '${session.customer_email || ''}')">
+                    <div class="customer-name">
+                        <span>${session.customer_name || 'Cliente #' + session.customer_id}</span>
+                        ${session.unread_count > 0 ? `<span class="unread-badge">${session.unread_count}</span>` : ''}
+                    </div>
+                    <div class="last-message">${session.last_message || 'Sem mensagens ainda'}</div>
+                    <div class="time">${formatTime(session.updated_at)}</div>
+                </div>
+            `).join('');
+            
+            if (!sessionRestored) {
+                sessionRestored = true;
+                
+                if (currentSessionId) {
+                    const savedSession = sessionsList.find(s => s.id == currentSessionId);
+                    if (savedSession) {
+                        document.getElementById('noChatSelected').style.display = 'none';
+                        document.getElementById('chatContent').style.display = 'flex';
+                        document.getElementById('customerName').textContent = savedSession.customer_name || 'Cliente';
+                        document.getElementById('customerEmail').textContent = savedSession.customer_email || '';
+                        
+                        socket.emit('join-session', { sessionId: currentSessionId });
+                    } else {
+                        currentSessionId = null;
+                        localStorage.removeItem('operator_current_session');
+                    }
+                }
+            }
+        }
+
+        function selectSession(sessionId, customerName, customerEmail) {
+            currentSessionId = sessionId;
+            
+            localStorage.setItem('operator_current_session', sessionId);
+            
+            document.getElementById('noChatSelected').style.display = 'none';
+            document.getElementById('chatContent').style.display = 'flex';
+            document.getElementById('customerName').textContent = customerName;
+            document.getElementById('customerEmail').textContent = customerEmail;
+            
+            document.querySelectorAll('.session-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            socket.emit('join-session', { sessionId });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message || !currentSessionId) {
+                return;
+            }
+
+            socket.emit('send-message', { sessionId: currentSessionId, message });
+            input.value = '';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            } else {
+                if (currentSessionId) {
+                    socket.emit('typing', { sessionId: currentSessionId, isTyping: true });
+                    setTimeout(() => {
+                        socket.emit('typing', { sessionId: currentSessionId, isTyping: false });
+                    }, 1000);
+                }
+            }
+        }
+
+        function addMessage(text, isMe, timestamp) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isMe ? 'me' : 'other'}`;
+            
+            const time = new Date(timestamp).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="bubble">
+                    ${text}
+                    <div class="info">${time}</div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Agora';
+            if (diff < 3600000) return Math.floor(diff / 60000) + 'min';
+            if (diff < 86400000) return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            return date.toLocaleDateString('pt-BR');
+        }
+    </script>
+</body>
+</html>
