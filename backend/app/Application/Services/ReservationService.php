@@ -37,7 +37,7 @@ final class ReservationService
     public function create(CreateReservationDTO $dto): Reservation
     {
         $parkingSpot = $this->parkingSpotService->findById($dto->parking_spot_id);
-        
+
         if (!$parkingSpot) {
             throw new \InvalidArgumentException('Parking spot not found');
         }
@@ -59,7 +59,7 @@ final class ReservationService
     public function complete(int $id, Carbon $exitTime): Reservation
     {
         $reservation = $this->findById($id);
-        
+
         if (!$reservation) {
             throw new \InvalidArgumentException('Reservation not found');
         }
@@ -76,11 +76,11 @@ final class ReservationService
         );
 
         $completedReservation = $this->reservationRepository->complete($id, $dto->toArray());
-        
+
         if (!$completedReservation) {
             throw new \InvalidArgumentException('Failed to complete reservation');
         }
-        
+
         $this->parkingSpotService->markAsAvailable($reservation->parking_spot_id);
 
         return $completedReservation;
@@ -89,7 +89,7 @@ final class ReservationService
     public function cancel(int $id): Reservation
     {
         $reservation = $this->findById($id);
-        
+
         if (!$reservation) {
             throw new \InvalidArgumentException('Reservation not found');
         }
@@ -114,7 +114,7 @@ final class ReservationService
         $minutes = $entryTime->copy()->addHours($hours)->diffInMinutes($exitTime);
 
         $amount = $hours * 5.0;
-        
+
         if ($minutes > 0) {
             $additionalBlocks = ceil($minutes / 15);
             $amount += $additionalBlocks * 1.0;

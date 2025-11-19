@@ -39,7 +39,7 @@ final class VehicleService
     public function update(int $id, UpdateVehicleDTO $dto): Vehicle
     {
         $vehicle = $this->findById($id);
-        
+
         if (!$vehicle) {
             throw new \InvalidArgumentException('Vehicle not found');
         }
@@ -51,14 +51,14 @@ final class VehicleService
         }
 
         $this->vehicleRepository->update($id, $dto->toArray());
-        
+
         return $this->findById($id);
     }
 
     public function delete(int $id): bool
     {
         $vehicle = $this->findById($id);
-        
+
         if (!$vehicle) {
             throw new \InvalidArgumentException('Vehicle not found');
         }

@@ -11,7 +11,7 @@ use App\Infrastructure\Persistence\Models\ParkingSpot;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
-final class ParkingSpotService
+class ParkingSpotService
 {
     public function __construct(
         private readonly ParkingSpotRepositoryInterface $parkingSpotRepository
