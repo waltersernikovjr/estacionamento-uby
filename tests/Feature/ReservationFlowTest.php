@@ -52,7 +52,6 @@ class ReservationFlowTest extends TestCase
 
     public function test_complete_reservation_and_payment_flow(): void
     {
-        // Step 1: Create reservation
         $reservationResponse = $this->withToken($this->customerToken)
             ->postJson('/api/v1/reservations', [
                 'customer_id' => $this->customer->id,
@@ -76,7 +75,6 @@ class ReservationFlowTest extends TestCase
 
         $reservationId = $reservationResponse->json('data.id');
 
-        // Step 2: Complete reservation
         $completeResponse = $this->withToken($this->customerToken)
             ->postJson("/api/v1/reservations/{$reservationId}/complete", [
                 'exit_time' => now()->addHours(2)->toISOString()
@@ -92,7 +90,6 @@ class ReservationFlowTest extends TestCase
         $totalAmount = $completeResponse->json('data.total_amount');
         $this->assertGreaterThan(0, $totalAmount);
 
-        // Step 3: Create payment
         $paymentResponse = $this->withToken($this->customerToken)
             ->postJson('/api/v1/payments', [
                 'reservation_id' => $reservationId,
@@ -114,7 +111,6 @@ class ReservationFlowTest extends TestCase
 
         $paymentId = $paymentResponse->json('data.id');
 
-        // Step 4: Mark payment as paid
         $paidResponse = $this->withToken($this->customerToken)
             ->postJson("/api/v1/payments/{$paymentId}/mark-as-paid");
 

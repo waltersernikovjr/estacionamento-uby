@@ -23,7 +23,6 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind repository interfaces to their Eloquent implementations
         $this->app->bind(
             OperatorRepositoryInterface::class,
             EloquentOperatorRepository::class
@@ -60,6 +59,5 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
     }
 }

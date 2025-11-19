@@ -34,7 +34,6 @@ class VehicleServiceTest extends TestCase
 
     public function test_create_vehicle_successfully(): void
     {
-        // Arrange
         $dto = new CreateVehicleDTO(
             customerId: 1,
             licensePlate: 'ABC1234',
@@ -56,17 +55,14 @@ class VehicleServiceTest extends TestCase
             ->with($dto)
             ->andReturn($vehicle);
 
-        // Act
         $result = $this->service->create($dto);
 
-        // Assert
         $this->assertInstanceOf(Vehicle::class, $result);
         $this->assertEquals('ABC1234', $result->license_plate);
     }
 
     public function test_create_vehicle_fails_when_license_plate_exists(): void
     {
-        // Arrange
         $dto = new CreateVehicleDTO(
             customerId: 1,
             licensePlate: 'ABC1234',
@@ -80,17 +76,14 @@ class VehicleServiceTest extends TestCase
             ->with('ABC1234')
             ->andReturn(true);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Placa já cadastrada');
 
-        // Act
         $this->service->create($dto);
     }
 
     public function test_update_vehicle_successfully(): void
     {
-        // Arrange
         $dto = new UpdateVehicleDTO(
             brand: 'Honda',
             model: 'Civic',
@@ -104,16 +97,13 @@ class VehicleServiceTest extends TestCase
             ->with(1, $dto)
             ->andReturn($vehicle);
 
-        // Act
         $result = $this->service->update(1, $dto);
 
-        // Assert
         $this->assertInstanceOf(Vehicle::class, $result);
     }
 
     public function test_find_by_customer_returns_collection(): void
     {
-        // Arrange
         $vehicles = new Collection([
             new Vehicle(),
             new Vehicle()
@@ -123,17 +113,14 @@ class VehicleServiceTest extends TestCase
             ->with(1)
             ->andReturn($vehicles);
 
-        // Act
         $result = $this->service->findByCustomer(1);
 
-        // Assert
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertCount(2, $result);
     }
 
     public function test_find_by_license_plate_returns_vehicle(): void
     {
-        // Arrange
         $vehicle = new Vehicle();
         $vehicle->id = 1;
         $vehicle->license_plate = 'ABC1234';
@@ -142,31 +129,25 @@ class VehicleServiceTest extends TestCase
             ->with('ABC1234')
             ->andReturn($vehicle);
 
-        // Act
         $result = $this->service->findByLicensePlate('ABC1234');
 
-        // Assert
         $this->assertInstanceOf(Vehicle::class, $result);
         $this->assertEquals('ABC1234', $result->license_plate);
     }
 
     public function test_delete_vehicle_successfully(): void
     {
-        // Arrange
         $this->repository->shouldReceive('delete')
             ->with(1)
             ->andReturn(true);
 
-        // Act
         $result = $this->service->delete(1);
 
-        // Assert
         $this->assertTrue($result);
     }
 
     public function test_find_all_returns_collection(): void
     {
-        // Arrange
         $vehicles = new Collection([
             new Vehicle(),
             new Vehicle(),
@@ -176,17 +157,14 @@ class VehicleServiceTest extends TestCase
         $this->repository->shouldReceive('findAll')
             ->andReturn($vehicles);
 
-        // Act
         $result = $this->service->findAll();
 
-        // Assert
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertCount(3, $result);
     }
 
     public function test_find_by_id_returns_vehicle(): void
     {
-        // Arrange
         $vehicle = new Vehicle();
         $vehicle->id = 1;
 
@@ -194,10 +172,8 @@ class VehicleServiceTest extends TestCase
             ->with(1)
             ->andReturn($vehicle);
 
-        // Act
         $result = $this->service->find(1);
 
-        // Assert
         $this->assertInstanceOf(Vehicle::class, $result);
         $this->assertEquals(1, $result->id);
     }

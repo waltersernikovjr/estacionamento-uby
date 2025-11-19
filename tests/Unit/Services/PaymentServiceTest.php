@@ -34,7 +34,6 @@ class PaymentServiceTest extends TestCase
 
     public function test_create_payment_successfully(): void
     {
-        // Arrange
         $dto = new CreatePaymentDTO(
             reservationId: 1,
             amount: 25.00,
@@ -57,10 +56,8 @@ class PaymentServiceTest extends TestCase
             ->with($dto)
             ->andReturn($payment);
 
-        // Act
         $result = $this->service->create($dto);
 
-        // Assert
         $this->assertInstanceOf(Payment::class, $result);
         $this->assertEquals(1, $result->id);
         $this->assertEquals('pending', $result->status);
@@ -69,7 +66,6 @@ class PaymentServiceTest extends TestCase
 
     public function test_create_payment_fails_when_reservation_already_has_payment(): void
     {
-        // Arrange
         $dto = new CreatePaymentDTO(
             reservationId: 1,
             amount: 25.00,
@@ -85,17 +81,14 @@ class PaymentServiceTest extends TestCase
             ->with(1)
             ->andReturn($existingPayment);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Esta reserva já possui um pagamento');
 
-        // Act
         $this->service->create($dto);
     }
 
     public function test_mark_as_paid_successfully(): void
     {
-        // Arrange
         $payment = new Payment();
         $payment->id = 1;
         $payment->status = 'pending';
@@ -108,10 +101,8 @@ class PaymentServiceTest extends TestCase
             ->once()
             ->andReturn($payment);
 
-        // Act
         $result = $this->service->markAsPaid(1);
 
-        // Assert
         $this->assertInstanceOf(Payment::class, $result);
         $this->assertEquals('paid', $result->status);
         $this->assertNotNull($result->paid_at);
@@ -119,7 +110,6 @@ class PaymentServiceTest extends TestCase
 
     public function test_mark_as_paid_fails_when_already_paid(): void
     {
-        // Arrange
         $payment = new Payment();
         $payment->id = 1;
         $payment->status = 'paid';
@@ -128,17 +118,14 @@ class PaymentServiceTest extends TestCase
             ->with(1)
             ->andReturn($payment);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Este pagamento já foi processado');
 
-        // Act
         $this->service->markAsPaid(1);
     }
 
     public function test_find_by_status_returns_collection(): void
     {
-        // Arrange
         $payments = new Collection([
             new Payment(),
             new Payment()
@@ -148,17 +135,14 @@ class PaymentServiceTest extends TestCase
             ->with('pending')
             ->andReturn($payments);
 
-        // Act
         $result = $this->service->findByStatus('pending');
 
-        // Assert
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertCount(2, $result);
     }
 
     public function test_update_payment_successfully(): void
     {
-        // Arrange
         $dto = new UpdatePaymentDTO(
             amount: 30.00,
             paymentMethod: 'pix',
@@ -174,30 +158,24 @@ class PaymentServiceTest extends TestCase
             ->with(1, $dto)
             ->andReturn($payment);
 
-        // Act
         $result = $this->service->update(1, $dto);
 
-        // Assert
         $this->assertInstanceOf(Payment::class, $result);
     }
 
     public function test_delete_payment_successfully(): void
     {
-        // Arrange
         $this->repository->shouldReceive('delete')
             ->with(1)
             ->andReturn(true);
 
-        // Act
         $result = $this->service->delete(1);
 
-        // Assert
         $this->assertTrue($result);
     }
 
     public function test_find_all_returns_collection(): void
     {
-        // Arrange
         $payments = new Collection([
             new Payment(),
             new Payment(),
@@ -207,17 +185,14 @@ class PaymentServiceTest extends TestCase
         $this->repository->shouldReceive('findAll')
             ->andReturn($payments);
 
-        // Act
         $result = $this->service->findAll();
 
-        // Assert
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertCount(3, $result);
     }
 
     public function test_find_by_id_returns_payment(): void
     {
-        // Arrange
         $payment = new Payment();
         $payment->id = 1;
 
@@ -225,10 +200,8 @@ class PaymentServiceTest extends TestCase
             ->with(1)
             ->andReturn($payment);
 
-        // Act
         $result = $this->service->find(1);
 
-        // Assert
         $this->assertInstanceOf(Payment::class, $result);
         $this->assertEquals(1, $result->id);
     }

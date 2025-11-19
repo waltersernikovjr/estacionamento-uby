@@ -41,7 +41,6 @@ class ReservationServiceTest extends TestCase
 
     public function test_create_reservation_successfully(): void
     {
-        // Arrange
         $dto = new CreateReservationDTO(
             customerId: 1,
             vehicleId: 1,
@@ -74,10 +73,8 @@ class ReservationServiceTest extends TestCase
             ->with($dto)
             ->andReturn($reservation);
 
-        // Act
         $result = $this->service->create($dto);
 
-        // Assert
         $this->assertInstanceOf(Reservation::class, $result);
         $this->assertEquals(1, $result->id);
         $this->assertEquals('active', $result->status);
@@ -85,7 +82,6 @@ class ReservationServiceTest extends TestCase
 
     public function test_create_reservation_fails_when_spot_is_occupied(): void
     {
-        // Arrange
         $dto = new CreateReservationDTO(
             customerId: 1,
             vehicleId: 1,
@@ -103,17 +99,14 @@ class ReservationServiceTest extends TestCase
             ->with(1)
             ->andReturn($parkingSpot);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Vaga não está disponível');
 
-        // Act
         $this->service->create($dto);
     }
 
     public function test_create_reservation_fails_when_spot_has_active_reservation(): void
     {
-        // Arrange
         $dto = new CreateReservationDTO(
             customerId: 1,
             vehicleId: 1,
@@ -135,17 +128,14 @@ class ReservationServiceTest extends TestCase
             ->with(1)
             ->andReturn(true);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('já possui uma reserva ativa');
 
-        // Act
         $this->service->create($dto);
     }
 
     public function test_complete_reservation_successfully(): void
     {
-        // Arrange
         $reservation = new Reservation();
         $reservation->id = 1;
         $reservation->status = 'active';
@@ -161,10 +151,8 @@ class ReservationServiceTest extends TestCase
             ->once()
             ->andReturn($reservation);
 
-        // Act
         $result = $this->service->complete(1, $exitTime);
 
-        // Assert
         $this->assertInstanceOf(Reservation::class, $result);
         $this->assertEquals('completed', $result->status);
         $this->assertNotNull($result->exit_time);
@@ -174,7 +162,6 @@ class ReservationServiceTest extends TestCase
 
     public function test_complete_reservation_fails_when_not_active(): void
     {
-        // Arrange
         $reservation = new Reservation();
         $reservation->id = 1;
         $reservation->status = 'completed';
@@ -183,17 +170,14 @@ class ReservationServiceTest extends TestCase
             ->with(1)
             ->andReturn($reservation);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Apenas reservas ativas podem ser finalizadas');
 
-        // Act
         $this->service->complete(1, Carbon::now());
     }
 
     public function test_cancel_reservation_successfully(): void
     {
-        // Arrange
         $reservation = new Reservation();
         $reservation->id = 1;
         $reservation->status = 'active';
@@ -206,17 +190,14 @@ class ReservationServiceTest extends TestCase
             ->once()
             ->andReturn($reservation);
 
-        // Act
         $result = $this->service->cancel(1);
 
-        // Assert
         $this->assertInstanceOf(Reservation::class, $result);
         $this->assertEquals('cancelled', $result->status);
     }
 
     public function test_cancel_reservation_fails_when_not_active(): void
     {
-        // Arrange
         $reservation = new Reservation();
         $reservation->id = 1;
         $reservation->status = 'completed';
@@ -225,56 +206,44 @@ class ReservationServiceTest extends TestCase
             ->with(1)
             ->andReturn($reservation);
 
-        // Assert
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Apenas reservas ativas podem ser canceladas');
 
-        // Act
         $this->service->cancel(1);
     }
 
     public function test_calculate_parking_amount_correctly(): void
     {
-        // Arrange
         $entryTime = Carbon::parse('2025-01-18 14:00:00');
         $exitTime = Carbon::parse('2025-01-18 16:30:00'); // 2h30min = 12.50
 
-        // Act
         $amount = $this->service->calculateAmount($entryTime, $exitTime);
 
-        // Assert
         $this->assertEquals(12.50, $amount);
     }
 
     public function test_calculate_parking_amount_for_exact_hours(): void
     {
-        // Arrange
         $entryTime = Carbon::parse('2025-01-18 14:00:00');
         $exitTime = Carbon::parse('2025-01-18 17:00:00'); // 3h = 15.00
 
-        // Act
         $amount = $this->service->calculateAmount($entryTime, $exitTime);
 
-        // Assert
         $this->assertEquals(15.00, $amount);
     }
 
     public function test_calculate_parking_amount_for_less_than_hour(): void
     {
-        // Arrange
         $entryTime = Carbon::parse('2025-01-18 14:00:00');
         $exitTime = Carbon::parse('2025-01-18 14:45:00'); // 45min = 5.00
 
-        // Act
         $amount = $this->service->calculateAmount($entryTime, $exitTime);
 
-        // Assert
         $this->assertEquals(5.00, $amount);
     }
 
     public function test_find_by_customer_returns_collection(): void
     {
-        // Arrange
         $reservations = new Collection([
             new Reservation(),
             new Reservation()
@@ -284,10 +253,8 @@ class ReservationServiceTest extends TestCase
             ->with(1)
             ->andReturn($reservations);
 
-        // Act
         $result = $this->service->findByCustomer(1);
 
-        // Assert
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertCount(2, $result);
     }

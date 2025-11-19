@@ -14,15 +14,12 @@ final class ViaCepService
 
     public function getAddress(string $zipCode): ?array
     {
-        // Remove non-numeric characters
         $zipCode = preg_replace('/\D/', '', $zipCode);
 
-        // Validate zip code format
         if (strlen($zipCode) !== 8) {
             throw new \InvalidArgumentException('CEP deve ter 8 dígitos');
         }
 
-        // Check cache first
         $cacheKey = "viacep_{$zipCode}";
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($zipCode) {

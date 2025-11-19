@@ -35,7 +35,6 @@ final class PaymentService
 
     public function create(CreatePaymentDTO $dto): Payment
     {
-        // Check if reservation already has a payment
         if ($this->findByReservation($dto->reservation_id)) {
             throw new \InvalidArgumentException('Reservation already has a payment');
         }
