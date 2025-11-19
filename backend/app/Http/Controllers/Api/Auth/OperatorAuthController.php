@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Mail\WelcomeOperatorMail;
 use App\Infrastructure\Persistence\Models\Operator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class OperatorAuthController extends Controller
@@ -28,6 +30,9 @@ class OperatorAuthController extends Controller
             'password' => Hash::make($request->input('password')),
             'phone' => $request->input('phone'),
         ]);
+
+        // Send welcome email with verification link
+        Mail::to($operator->email)->send(new WelcomeOperatorMail($operator));
 
         $token = $operator->createToken('operator-token')->plainTextToken;
 
@@ -55,6 +60,13 @@ class OperatorAuthController extends Controller
         if (!$operator || !Hash::check($request->input('password'), $operator->password)) {
             throw ValidationException::withMessages([
                 'email' => ['As credenciais fornecidas estão incorretas.'],
+            ]);
+        }
+
+        // Check if email is verified
+        if ($operator->email_verified_at === null) {
+            throw ValidationException::withMessages([
+                'email' => ['Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada.'],
             ]);
         }
 

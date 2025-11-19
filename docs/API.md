@@ -49,6 +49,20 @@ Content-Type: application/json
 }
 ```
 
+**⚠️ Importante:** O email deve estar verificado para fazer login. Caso contrário, retornará erro 422.
+
+**Response (422 - Email Não Verificado):**
+```json
+{
+  "message": "Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada.",
+  "errors": {
+    "email": [
+      "Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada."
+    ]
+  }
+}
+```
+
 #### 3. Registrar Cliente
 ```http
 POST /customers/register
@@ -80,7 +94,70 @@ Content-Type: application/json
 }
 ```
 
-#### 5. Consultar CEP
+**⚠️ Importante:** O email deve estar verificado para fazer login. Caso contrário, retornará erro 422.
+
+**Response (422 - Email Não Verificado):**
+```json
+{
+  "message": "Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada.",
+  "errors": {
+    "email": [
+      "Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada."
+    ]
+  }
+}
+```
+
+#### 5. Verificar Email
+```http
+GET /email/verify/{id}/{hash}?type={customer|operator}
+```
+
+**Parâmetros:**
+- `id`: ID do usuário
+- `hash`: SHA-1 do email (gerado automaticamente)
+- `type`: Tipo de usuário (`customer` ou `operator`)
+
+**Response:** Página HTML de sucesso, erro ou já verificado
+
+**Casos:**
+- ✅ Email verificado com sucesso
+- ℹ️ Email já estava verificado anteriormente
+- ❌ Link inválido ou expirado (24h)
+
+#### 6. Reenviar Email de Verificação
+```http
+POST /email/resend
+Content-Type: application/json
+
+{
+  "email": "maria@example.com",
+  "type": "customer"
+}
+```
+
+**Response (200 - Sucesso):**
+```json
+{
+  "message": "Email de verificação reenviado com sucesso."
+}
+```
+
+**Response (400 - Já Verificado):**
+```json
+{
+  "message": "Email já está verificado."
+}
+```
+
+**Response (404 - Usuário Não Encontrado):**
+```json
+{
+  "message": "Usuário não encontrado."
+}
+```
+
+#### 7. Consultar CEP
 ```http
 GET /address/01310100
 ```

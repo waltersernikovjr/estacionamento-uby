@@ -87,6 +87,17 @@ services:
       timeout: 5s
       retries: 5
 
+  # MailHog - Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: estacionamento-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - estacionamento-network
+
 networks:
   estacionamento-network:
     driver: bridge

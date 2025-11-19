@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\Auth\CustomerAuthController;
+use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\Auth\OperatorAuthController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\OperatorController;
@@ -22,6 +23,12 @@ Route::prefix('v1')->group(function () {
     // Customer authentication
     Route::post('customers/register', [CustomerAuthController::class, 'register']);
     Route::post('customers/login', [CustomerAuthController::class, 'login']);
+    
+    // Email verification
+    Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->name('verification.verify');
+    Route::post('email/resend', [EmailVerificationController::class, 'resend'])
+        ->name('verification.resend');
     
     // Address lookup via CEP
     Route::get('address/{zipCode}', [AddressController::class, 'getByZipCode']);

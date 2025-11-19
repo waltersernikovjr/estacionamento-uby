@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Mail\WelcomeCustomerMail;
 use App\Infrastructure\Persistence\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class CustomerAuthController extends Controller
@@ -47,6 +49,9 @@ class CustomerAuthController extends Controller
             'address_state' => $request->input('state'),
         ]);
 
+        // Send welcome email with verification link
+        Mail::to($customer->email)->send(new WelcomeCustomerMail($customer));
+
         $token = $customer->createToken('customer-token')->plainTextToken;
 
         return response()->json([
@@ -74,6 +79,13 @@ class CustomerAuthController extends Controller
         if (!$customer || !Hash::check($request->input('password'), $customer->password)) {
             throw ValidationException::withMessages([
                 'email' => ['As credenciais fornecidas estão incorretas.'],
+            ]);
+        }
+
+        // Check if email is verified
+        if ($customer->email_verified_at === null) {
+            throw ValidationException::withMessages([
+                'email' => ['Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada.'],
             ]);
         }
 
