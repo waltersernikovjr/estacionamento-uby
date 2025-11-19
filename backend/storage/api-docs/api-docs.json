@@ -1,0 +1,1099 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Parking Management API - Uby",
+        "description": "API completa para gerenciamento de estacionamento com autenticação, reservas, pagamentos e chat",
+        "contact": {
+            "email": "contato@uby.com.br"
+        },
+        "license": {
+            "name": "Proprietary",
+            "url": "https://uby.com.br"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/customers/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Registrar novo cliente",
+                "description": "Cria uma nova conta de cliente no sistema com endereço completo",
+                "operationId": "registerCustomer",
+                "requestBody": {
+                    "description": "Dados do cliente",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "cpf",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Nome completo",
+                                        "type": "string",
+                                        "example": "João Silva"
+                                    },
+                                    "email": {
+                                        "description": "Email único",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "joao.silva@email.com"
+                                    },
+                                    "cpf": {
+                                        "description": "CPF com 11 dígitos (sem pontos)",
+                                        "type": "string",
+                                        "example": "12345678900"
+                                    },
+                                    "rg": {
+                                        "description": "RG (opcional)",
+                                        "type": "string",
+                                        "example": "123456789"
+                                    },
+                                    "password": {
+                                        "description": "Senha (mínimo 8 caracteres)",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmação da senha",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "phone": {
+                                        "description": "Telefone (opcional)",
+                                        "type": "string",
+                                        "example": "11999999999"
+                                    },
+                                    "zip_code": {
+                                        "description": "CEP com 8 dígitos",
+                                        "type": "string",
+                                        "example": "01310100"
+                                    },
+                                    "street": {
+                                        "description": "Logradouro",
+                                        "type": "string",
+                                        "example": "Av Paulista"
+                                    },
+                                    "number": {
+                                        "description": "Número",
+                                        "type": "string",
+                                        "example": "1000"
+                                    },
+                                    "complement": {
+                                        "description": "Complemento (opcional)",
+                                        "type": "string",
+                                        "example": "Apto 101"
+                                    },
+                                    "neighborhood": {
+                                        "description": "Bairro",
+                                        "type": "string",
+                                        "example": "Bela Vista"
+                                    },
+                                    "city": {
+                                        "description": "Cidade",
+                                        "type": "string",
+                                        "example": "São Paulo"
+                                    },
+                                    "state": {
+                                        "description": "Estado (2 letras)",
+                                        "type": "string",
+                                        "example": "SP"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cliente registrado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "description": "Token de autenticação Sanctum",
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "João Silva"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "joao.silva@email.com"
+                                                },
+                                                "cpf": {
+                                                    "type": "string",
+                                                    "example": "12345678900"
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "11999999999"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "customer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                }
+            }
+        },
+        "/api/v1/customers/me": {
+            "get": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Obter dados do cliente autenticado",
+                "description": "Retorna os dados completos do cliente logado incluindo endereço",
+                "operationId": "getCurrentCustomer",
+                "responses": {
+                    "200": {
+                        "description": "Dados do cliente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "João Silva"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "joao.silva@email.com"
+                                                },
+                                                "cpf": {
+                                                    "type": "string",
+                                                    "example": "12345678900"
+                                                },
+                                                "rg": {
+                                                    "type": "string",
+                                                    "example": "123456789"
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "11999999999"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "customer"
+                                                },
+                                                "address": {
+                                                    "properties": {
+                                                        "zip_code": {
+                                                            "type": "string",
+                                                            "example": "01310100"
+                                                        },
+                                                        "street": {
+                                                            "type": "string",
+                                                            "example": "Av Paulista"
+                                                        },
+                                                        "number": {
+                                                            "type": "string",
+                                                            "example": "1000"
+                                                        },
+                                                        "complement": {
+                                                            "type": "string",
+                                                            "nullable": true
+                                                        },
+                                                        "neighborhood": {
+                                                            "type": "string",
+                                                            "example": "Bela Vista"
+                                                        },
+                                                        "city": {
+                                                            "type": "string",
+                                                            "example": "São Paulo"
+                                                        },
+                                                        "state": {
+                                                            "type": "string",
+                                                            "example": "SP"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/vehicles": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Listar veículos do cliente",
+                "description": "Retorna todos os veículos do cliente autenticado",
+                "operationId": "listVehicles",
+                "responses": {
+                    "200": {
+                        "description": "Lista de veículos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Criar novo veículo",
+                "description": "Registra um novo veículo para o cliente autenticado",
+                "operationId": "createVehicle",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "customer_id",
+                                    "license_plate",
+                                    "brand",
+                                    "model",
+                                    "color",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "customer_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "license_plate": {
+                                        "description": "Placa no formato Mercosul",
+                                        "type": "string",
+                                        "example": "ABC1D234"
+                                    },
+                                    "brand": {
+                                        "description": "Marca do veículo",
+                                        "type": "string",
+                                        "example": "Toyota"
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "example": "Corolla"
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "example": "Prata"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "car",
+                                            "motorcycle",
+                                            "truck"
+                                        ],
+                                        "example": "car"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Veículo criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "customer_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "license_plate": {
+                                                    "type": "string",
+                                                    "example": "ABC1D234"
+                                                },
+                                                "brand": {
+                                                    "type": "string",
+                                                    "example": "Toyota"
+                                                },
+                                                "model": {
+                                                    "type": "string",
+                                                    "example": "Corolla"
+                                                },
+                                                "color": {
+                                                    "type": "string",
+                                                    "example": "Prata"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "car"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/parking-spots": {
+            "get": {
+                "tags": [
+                    "Parking Spots"
+                ],
+                "summary": "Listar vagas",
+                "description": "Lista vagas de estacionamento. Pode filtrar por status (available, occupied, reserved)",
+                "operationId": "listParkingSpots",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "available",
+                                "occupied",
+                                "reserved"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de vagas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Parking Spots"
+                ],
+                "summary": "Criar nova vaga",
+                "description": "Cria uma nova vaga de estacionamento. Valores padrão: hourly_price=5.00, width=2.50, length=5.00",
+                "operationId": "createParkingSpot",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "number",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "number": {
+                                        "description": "Número/identificação da vaga",
+                                        "type": "string",
+                                        "example": "A01"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "regular",
+                                            "vip",
+                                            "disabled"
+                                        ],
+                                        "example": "regular"
+                                    },
+                                    "hourly_price": {
+                                        "description": "Valor por hora (padrão: 5.00)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5
+                                    },
+                                    "width": {
+                                        "description": "Largura em metros (padrão: 2.50)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2.5
+                                    },
+                                    "length": {
+                                        "description": "Comprimento em metros (padrão: 5.00)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5
+                                    },
+                                    "operator_id": {
+                                        "description": "ID do operador (opcional)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Vaga criada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "number": {
+                                                    "type": "string",
+                                                    "example": "A01"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "regular"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "available"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reservations": {
+            "post": {
+                "tags": [
+                    "Reservations"
+                ],
+                "summary": "Criar reserva",
+                "description": "Cria uma nova reserva de vaga. A vaga fica com status occupied e total_amount fica null até completar",
+                "operationId": "createReservation",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "customer_id",
+                                    "vehicle_id",
+                                    "parking_spot_id",
+                                    "entry_time"
+                                ],
+                                "properties": {
+                                    "customer_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "vehicle_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "parking_spot_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "entry_time": {
+                                        "description": "Data/hora de entrada no formato ISO 8601",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-11-19T12:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Reserva criada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "vehicle_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "entry_time": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "exit_time": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "expected_exit_time": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "total_amount": {
+                                                    "description": "Valor total (null até completar)",
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "active"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reservations/{id}/complete": {
+            "post": {
+                "tags": [
+                    "Reservations"
+                ],
+                "summary": "Completar reserva",
+                "description": "Finaliza a reserva calculando o valor total. Cálculo: R$5/hora + R$1 por bloco de 15min extras. A vaga volta para status available",
+                "operationId": "completeReservation",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da reserva",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "exit_time"
+                                ],
+                                "properties": {
+                                    "exit_time": {
+                                        "description": "Data/hora de saída",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-11-19T14:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reserva completada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "vehicle_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "entry_time": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "exit_time": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "total_amount": {
+                                                    "description": "Valor total calculado",
+                                                    "type": "string",
+                                                    "example": "10.00"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "completed"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payments": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Criar pagamento",
+                "description": "Cria um pagamento para uma reserva completada",
+                "operationId": "createPayment",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reservation_id",
+                                    "amount",
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "reservation_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "amount": {
+                                        "description": "Valor do pagamento",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10
+                                    },
+                                    "payment_method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "credit_card",
+                                            "debit_card",
+                                            "pix",
+                                            "cash",
+                                            "others"
+                                        ],
+                                        "example": "credit_card"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "paid",
+                                            "cancelled"
+                                        ],
+                                        "example": "pending"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pagamento criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "amount": {
+                                                    "type": "string",
+                                                    "example": "10.00"
+                                                },
+                                                "payment_method": {
+                                                    "type": "string",
+                                                    "example": "credit_card"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "paid_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payments/{id}/mark-as-paid": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Marcar pagamento como pago",
+                "description": "Atualiza o status do pagamento para paid e registra a data/hora do pagamento",
+                "operationId": "markPaymentAsPaid",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do pagamento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pagamento confirmado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "amount": {
+                                                    "type": "string",
+                                                    "example": "10.00"
+                                                },
+                                                "payment_method": {
+                                                    "type": "string",
+                                                    "example": "credit_card"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "paid"
+                                                },
+                                                "paid_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/viacep/{zipcode}": {
+            "get": {
+                "tags": [
+                    "Utils"
+                ],
+                "summary": "Consultar CEP via ViaCEP",
+                "description": "Consulta dados de endereço através do CEP utilizando a API ViaCEP",
+                "operationId": "getAddressByZipCode",
+                "parameters": [
+                    {
+                        "name": "zipcode",
+                        "in": "path",
+                        "description": "CEP com 8 dígitos (sem pontos ou hífen)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01310100"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do endereço",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "zip_code": {
+                                                    "type": "string",
+                                                    "example": "01310-100"
+                                                },
+                                                "street": {
+                                                    "type": "string",
+                                                    "example": "Avenida Paulista"
+                                                },
+                                                "complement": {
+                                                    "type": "string",
+                                                    "example": "de 612 a 1510 - lado par"
+                                                },
+                                                "neighborhood": {
+                                                    "type": "string",
+                                                    "example": "Bela Vista"
+                                                },
+                                                "city": {
+                                                    "type": "string",
+                                                    "example": "São Paulo"
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "example": "SP"
+                                                },
+                                                "ibge": {
+                                                    "type": "string",
+                                                    "example": "3550308"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "CEP não encontrado"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Token de autenticação via Laravel Sanctum",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Endpoints de autenticação de clientes"
+        },
+        {
+            "name": "Customers",
+            "description": "Gerenciamento de clientes"
+        },
+        {
+            "name": "Vehicles",
+            "description": "Gerenciamento de veículos"
+        },
+        {
+            "name": "Parking Spots",
+            "description": "Gerenciamento de vagas de estacionamento"
+        },
+        {
+            "name": "Reservations",
+            "description": "Gerenciamento de reservas"
+        },
+        {
+            "name": "Payments",
+            "description": "Gerenciamento de pagamentos"
+        },
+        {
+            "name": "Utils",
+            "description": "Utilitários (ViaCEP, etc)"
+        }
+    ]
+}
