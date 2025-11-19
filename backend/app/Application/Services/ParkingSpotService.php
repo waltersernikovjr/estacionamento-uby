@@ -61,7 +61,13 @@ final class ParkingSpotService
             }
         }
 
-        return $this->parkingSpotRepository->update($id, $dto->toArray());
+        $updated = $this->parkingSpotRepository->update($id, $dto->toArray());
+        
+        if (!$updated) {
+            throw new \InvalidArgumentException('Failed to update parking spot');
+        }
+        
+        return $updated;
     }
 
     public function delete(int $id): bool
@@ -81,11 +87,23 @@ final class ParkingSpotService
 
     public function markAsOccupied(int $id): ParkingSpot
     {
-        return $this->parkingSpotRepository->update($id, ['status' => 'occupied']);
+        $updated = $this->parkingSpotRepository->update($id, ['status' => 'occupied']);
+        
+        if (!$updated) {
+            throw new \InvalidArgumentException('Failed to mark parking spot as occupied');
+        }
+        
+        return $updated;
     }
 
     public function markAsAvailable(int $id): ParkingSpot
     {
-        return $this->parkingSpotRepository->update($id, ['status' => 'available']);
+        $updated = $this->parkingSpotRepository->update($id, ['status' => 'available']);
+        
+        if (!$updated) {
+            throw new \InvalidArgumentException('Failed to mark parking spot as available');
+        }
+        
+        return $updated;
     }
 }

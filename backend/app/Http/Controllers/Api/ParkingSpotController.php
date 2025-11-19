@@ -43,7 +43,11 @@ class ParkingSpotController extends Controller
             $dto = new CreateParkingSpotDTO(
                 number: $request->input('number'),
                 type: $request->input('type'),
+                hourly_price: (float) $request->input('hourly_price', 5.00),
+                width: (float) $request->input('width', 2.50),
+                length: (float) $request->input('length', 5.00),
                 status: $request->input('status', 'available'),
+                operator_id: $request->input('operator_id'),
             );
 
             $parkingSpot = $this->parkingSpotService->create($dto);

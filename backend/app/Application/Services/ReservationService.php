@@ -76,6 +76,11 @@ final class ReservationService
         );
 
         $completedReservation = $this->reservationRepository->complete($id, $dto->toArray());
+        
+        if (!$completedReservation) {
+            throw new \InvalidArgumentException('Failed to complete reservation');
+        }
+        
         $this->parkingSpotService->markAsAvailable($reservation->parking_spot_id);
 
         return $completedReservation;
@@ -93,14 +98,14 @@ final class ReservationService
             throw new \InvalidArgumentException('Only active reservations can be cancelled');
         }
 
-        $cancelledReservation = $this->reservationRepository->update($id, [
+        $this->reservationRepository->update($id, [
             'status' => 'cancelled',
             'exit_time' => now(),
         ]);
 
         $this->parkingSpotService->markAsAvailable($reservation->parking_spot_id);
 
-        return $cancelledReservation;
+        return $this->findById($id);
     }
 
     private function calculateAmount(Carbon $entryTime, Carbon $exitTime): float
