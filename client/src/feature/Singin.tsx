@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { RegisterCliente } from "./forms/RegisterClienteForm";
-import { LoginForm } from "./forms/LoginForm";
-import { RegisterOperadorForm } from "./forms/RegisterOperadorForm";
+import { LoginForm } from "../components/forms/LoginForm";
+import { RegisterCliente } from "../components/forms/RegisterClienteForm";
+import { RegisterOperadorForm } from "../components/forms/RegisterOperadorForm";
 
 export const Singin = () => {
     const [toggle, setToggle] = useState<boolean>(false)

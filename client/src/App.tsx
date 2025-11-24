@@ -1,24 +1,132 @@
-import { useEffect, useState } from "react"
-
-import type { UserProps } from "./model/User";
-import { Singin } from "./components/Singin";
+import CreateVagas from "./application/CreateVaga";
+import GetVagas from "./application/GetVagas";
+import { RegisterOperador } from "./application/RegisterOperador";
+import { DIProvider } from "./di/DIContext";
+import { VagasStatus } from "./enum/VagaStatus";
+import { Home } from "./feature/Home";
+import { InmemoryOperadorGateway } from "./gateway/OperadorGateway";
+import { InmemoryVagaGateway } from "./gateway/VagaGateway";
 
 function App() {
-  const [user, setUser] = useState<UserProps | null>(null);
+  const container = new Map<string, any>();
 
-  useEffect(() => {
-    //GetCookie
-  }, [])
+  const operadorGateway = new InmemoryOperadorGateway();
+  const vagaGateway = new InmemoryVagaGateway([
+    {
+      id: 1,
+      numeroDaVaga: 1,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 2,
+      numeroDaVaga: 2,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 3,
+      numeroDaVaga: 3,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 4,
+      numeroDaVaga: 4,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.OCUPADA
+    },
+    {
+      id: 5,
+      numeroDaVaga: 5,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 6,
+      numeroDaVaga: 6,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 7,
+      numeroDaVaga: 7,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 8,
+      numeroDaVaga: 8,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 9,
+      numeroDaVaga: 9,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 10,
+      numeroDaVaga: 10,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 11,
+      numeroDaVaga: 11,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 12,
+      numeroDaVaga: 12,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 13,
+      numeroDaVaga: 13,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 14,
+      numeroDaVaga: 14,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+    {
+      id: 15,
+      numeroDaVaga: 15,
+      preco: 10,
+      dimensao: "10x2",
+      status: VagasStatus.LIVRE
+    },
+  ]);
+
+  container.set('registerOperador', new RegisterOperador(operadorGateway));
+  container.set('getVagas', new GetVagas(vagaGateway));
+  container.set('createVaga', new CreateVagas(vagaGateway));
 
   return (
-    <>
-      <div>
-        <div className="h-20 bg-blue-950">
-
-        </div>
-        {!user ? <div className="flex justify-evenly p-4"><Singin /></div> : <></>}
-      </div>
-    </>
+    <DIProvider container={container}>
+      <Home />
+    </DIProvider >
   )
 }
 

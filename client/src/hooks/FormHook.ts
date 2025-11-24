@@ -1,46 +1,56 @@
-import React, { useState } from "react";
+import { useState, useCallback } from "react";
 import { InputError } from "../error/InputError";
 import type Result from "../util/Result";
 
-type FormData = Record<string, string | undefined>;
+type ErrorType<T> = Partial<Record<keyof T, string>> & { general?: string };
 
-type Errors = Record<string, string | undefined>
+export function useForm<T extends Record<string, any>>(initialData: T) {
+    const [data, setData] = useState<T>(initialData);
+    const [errors, setErrors] = useState<ErrorType<T>>({});
 
-type Hook = {
-    formHook: [FormData, React.ChangeEventHandler<HTMLInputElement>, React.Dispatch<React.SetStateAction<FormData>>],
-    errorHook: [Errors, (result: Result) => void, React.Dispatch<React.SetStateAction<Errors>>],
-}
-
-export const FormHook = (): Hook => {
-    const [formData, setFormData] = useState<Partial<FormData>>({});
-    const [errors, setErrors] = useState<Errors>({});
-
-
-    const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
 
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setData(prev => ({ ...prev, [name]: value }));
 
-        if (errors[name as keyof Errors]) {
-            setErrors((prev) => ({ ...prev, [name]: undefined }));
-        }
-    };
+        setErrors(prev => {
+            if (!prev[name as keyof T]) return prev;
 
-    const handleError = (result: Result) => {
+            const copy = { ...prev };
+            delete copy[name as keyof T];
+            return copy;
+        });
+    }, []);
+
+    const handleError = useCallback((result: Result) => {
         if (result.isOk()) return;
 
         const err = result.error;
 
         if (err instanceof InputError) {
-
-            err.getErrors().forEach(({ key, message }) => setErrors((prev) => ({ ...prev, [key as string]: message })));
+            const map: Record<string, string> = {};
+            err.getErrors().forEach(({ key, message }) => {
+                if (!key) return;
+                map[key] = message;
+            });
+            setErrors(map as ErrorType<T>);
         } else {
-            setErrors({ general: err?.message });
+            setErrors({ general: err?.message } as ErrorType<T>);
         }
-    }
+    }, []);
+
+    const reset = useCallback(() => {
+        setData(initialData);
+        setErrors({});
+    }, [initialData]);
 
     return {
-        formHook: [formData, handleChange, setFormData],
-        errorHook: [errors, handleError, setErrors]
-    }
+        data,
+        errors,
+        handleChange,
+        handleError,
+        reset,
+        setField: (field: keyof T, value: any) =>
+            setData(prev => ({ ...prev, [field]: value }))
+    };
 }

@@ -22,10 +22,10 @@ export const RegisterOperadorValidator = Joi.object({
         'string.empty': 'A senha não pode estar vazia.'
     }),
 
-    confirmPassword: Joi.any().valid(Joi.ref('password')).required().messages({
+    confirmPassword: Joi.string().required().valid(Joi.ref('password')).messages({
         'any.only': 'A confirmação de senha não coincide com a senha.',
         'any.required': 'A confirmação de senha é obrigatória.',
-        'any.empty': 'A confirmação de senha não pode estar vazia.'
+        'string.empty': 'A confirmação de senha não pode estar vazia.'
     })
 });
 

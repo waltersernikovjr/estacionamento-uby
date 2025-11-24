@@ -1,30 +1,35 @@
 import { InputField } from "../input/InputField"
 import { RegisterOperador } from "../../application/RegisterOperador";
-import { InmemoryOperadorGateway } from "../../gateway/OperadorGateway";
-import { FormHook } from "../../hooks/FormHook";
+import { useForm } from "../../hooks/FormHook";
+import { useDI } from "../../di/DIContext";
 
+type RegisterOperadorFormType = {
+    nome: string;
+    email: string;
+    cpf: string;
+    password: string;
+    confirmPassword: string;
+}
 
 export const RegisterOperadorForm = () => {
-    const {
-        formHook: [formData, handleChange, setFormData],
-        errorHook: [errors, handleError, setErrors]
-    } = FormHook();
+    const { data, errors, handleChange, handleError, reset } = useForm<RegisterOperadorFormType>({
+        nome: "",
+        cpf: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+    });
+
+    const registerOperador = useDI<RegisterOperador>('registerOperador');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setErrors({});
 
-        const result = await new RegisterOperador(new InmemoryOperadorGateway()).execute(formData);
+        const result = await registerOperador.execute(data);
 
         if (result.isError()) return handleError(result);
 
-        setFormData({
-            nome: "",
-            email: "",
-            cpf: "",
-            password: "",
-            confirmPassword: "",
-        });
+        reset();
     }
 
     return <form onSubmit={handleSubmit} className="flex flex-col">
