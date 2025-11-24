@@ -7,10 +7,8 @@ export class RegisterOperador {
     constructor(private readonly _operadorGateway: OperadorGateway) { }
 
     async execute(data: Partial<Input>): Promise<Result<any, Error | InputError>> {
-        console.log(data);
 
         const { error } = RegisterOperadorValidator.validate(data, { abortEarly: false });
-        console.log(error);
 
         if (error) {
             return Result.Error(InputError.create(error));
@@ -19,8 +17,7 @@ export class RegisterOperador {
         try {
             const operador = await this._operadorGateway.create(data);
 
-            return Result.Ok(operador)
-
+            return Result.Ok(operador);
         } catch (err) {
             if (err instanceof Error) return Result.Error(err);
 

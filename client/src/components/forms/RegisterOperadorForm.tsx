@@ -1,57 +1,23 @@
-import { useState } from "react";
 import { InputField } from "../input/InputField"
 import { RegisterOperador } from "../../application/RegisterOperador";
 import { InmemoryOperadorGateway } from "../../gateway/OperadorGateway";
-import { InputError } from "../../error/InputError";
+import { FormHook } from "../../hooks/FormHook";
 
-type FormData = {
-    nome: string;
-    email: string;
-    cpf: string;
-    password: string;
-    confirmPassword: string;
-};
-
-type Errors = Record<string, string | undefined>
 
 export const RegisterOperadorForm = () => {
-    const [formData, setFormData] = useState<Partial<FormData>>({});
-    const [errors, setErrors] = useState<Errors>({});
+    const {
+        formHook: [formData, handleChange, setFormData],
+        errorHook: [errors, handleError, setErrors]
+    } = FormHook();
 
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        console.log(name);
-        console.log(value);
-
-        setFormData((prev) => ({ ...prev, [name]: value }));
-
-        if (errors[name as keyof Errors]) {
-            setErrors((prev) => ({ ...prev, [name]: undefined }));
-        }
-    };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
 
         const result = await new RegisterOperador(new InmemoryOperadorGateway()).execute(formData);
 
-        if (result.isError()) {
-            const err = result.error;
+        if (result.isError()) return handleError(result);
 
-            if (err instanceof InputError) {
-                console.log(err.getErrors());
-
-                err.getErrors().forEach(({ key, message }) => setErrors((prev) => ({ ...prev, [key as string]: message })));
-            } else {
-                setErrors({ general: err?.message });
-            }
-
-            return;
-        }
-
-        // Sucesso!
-        alert("Operador cadastrado com sucesso!");
         setFormData({
             nome: "",
             email: "",
@@ -59,7 +25,6 @@ export const RegisterOperadorForm = () => {
             password: "",
             confirmPassword: "",
         });
-
     }
 
     return <form onSubmit={handleSubmit} className="flex flex-col">

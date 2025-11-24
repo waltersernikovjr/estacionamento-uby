@@ -18,6 +18,10 @@ export default class Result<T = any, E = any> {
         return this._error
     }
 
+    isOk() {
+        return !!this._data;
+    }
+
     isError() {
         return !!this._error
     }
