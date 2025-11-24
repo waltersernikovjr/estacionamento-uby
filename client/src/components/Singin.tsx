@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { RegisterCliente } from "./forms/RegisterClienteForm";
 import { LoginForm } from "./forms/LoginForm";
-import { RegisterOperador } from "./forms/RegisterOperadorForm";
+import { RegisterOperadorForm } from "./forms/RegisterOperadorForm";
 
 export const Singin = () => {
     const [toggle, setToggle] = useState<boolean>(false)
@@ -32,7 +32,7 @@ export const Singin = () => {
             <h1 className="text-5xl p-5">{register ? 'Registro como ' : 'Login como '} {toggle ? 'Operador' : 'Cliente'}</h1>
             {
                 register ?
-                    toggle ? <RegisterOperador /> : <RegisterCliente />
+                    toggle ? <RegisterOperadorForm /> : <RegisterCliente />
                     : <LoginForm toggle={toggle} />
             }
             {
