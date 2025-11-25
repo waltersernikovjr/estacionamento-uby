@@ -1,3 +1,4 @@
+import { io } from "socket.io-client";
 import CreateVagas from "./application/CreateVaga";
 import GetVagas from "./application/GetVagas";
 import LoginCliente from "./application/LoginCliente";
@@ -11,6 +12,7 @@ import { Home } from "./feature/Home";
 import { InmemoryClienteGateway } from "./gateway/ClienteGateway";
 import { InmemoryOperadorGateway } from "./gateway/OperadorGateway";
 import { InmemoryVagaGateway } from "./gateway/VagaGateway";
+import SocketClient from "./util/SocketClientUtil";
 
 function App() {
   const container = new Map<string, any>();
@@ -133,6 +135,7 @@ function App() {
 
   container.set('loginCliente', new LoginCliente(clienteGateway));
   container.set('loginOperador', new LoginOperador(operadorGateway));
+  container.set('socketClient', new SocketClient(io('ws://localhost:3000')))
 
   return (
     <DIProvider container={container}>
