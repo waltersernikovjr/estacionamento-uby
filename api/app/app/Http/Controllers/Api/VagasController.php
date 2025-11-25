@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
 use App\Models\Vaga;
+use App\Models\Veiculo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
-class VagaController extends Controller
+class VagasController extends Controller
 {
-    public function __construct()
-    {
-        $this->method_exists('auth:api_operador');
-    }
-
     public function index()
     {
         return Vaga::all();
@@ -20,6 +21,7 @@ class VagaController extends Controller
 
     public function store(Request $request)
     {
+        dd($request->user());
         $request->validate([
             'numero' => 'required|unique:vagas',
             'preco_por_hora' => 'required|numeric|min:0',

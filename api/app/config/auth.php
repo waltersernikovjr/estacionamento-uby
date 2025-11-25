@@ -14,8 +14,8 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => 'api_operador',
+        'passwords' => 'users',
     ],
 
     /*
@@ -35,6 +35,11 @@ return [
     |
     */
     'ttl' => env('JWT_TTL', 60),
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Guards
+    |--------------------------------------------------------------------------
+    */
     'guards' => [
         'api_operador' => [
             'driver' => 'jwt',
@@ -45,6 +50,12 @@ return [
             'provider' => 'clientes',
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Providers
+    |--------------------------------------------------------------------------
+    */
     'providers' => [
         'operadores' => [
             'driver' => 'eloquent',
@@ -73,7 +84,7 @@ return [
     |
     */
 
-    'providers' => [
+    /*     'providers' => [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
@@ -84,7 +95,7 @@ return [
         //     'table' => 'users',
         // ],
     ],
-
+ */
     /*
     |--------------------------------------------------------------------------
     | Resetting Passwords

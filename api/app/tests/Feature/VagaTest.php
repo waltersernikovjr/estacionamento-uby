@@ -34,8 +34,6 @@ class VagaTest extends TestCase
             'comprimento' => 5.00,
         ]);
 
-        $response->ddJson("message");
-
         $response->assertStatus(201);
         $this->assertDatabaseHas('vagas', ['numero' => 'A01']);
     }

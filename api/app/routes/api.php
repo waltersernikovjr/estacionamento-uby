@@ -2,8 +2,7 @@
 
 use App\Http\Controllers\Api\OperadorAuthController;
 use App\Http\Controllers\Api\ClienteAuthController;
-use App\Http\Controllers\Api\VagaController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\VagasController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/operador/register', [OperadorAuthController::class, 'register']);
@@ -14,7 +13,8 @@ Route::post('/cliente/login', [ClienteAuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth:api_operador'], function () {
     Route::post('/operador/logout', [OperadorAuthController::class, 'logout']);
-    Route::apiResource('vagas', VagaController::class);
+    Route::post('/vagas', [VagasController::class, 'store']);
+    Route::get('/vagas', [VagasController::class, 'index']);
 });
 
 Route::group(['middleware' => 'auth:api_cliente'], function () {

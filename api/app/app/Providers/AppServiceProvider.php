@@ -12,8 +12,6 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //public function register()
-        dump(config('auth.guards.api_operador'));
-
         $this->app->register(\PHPOpenSourceSaver\JWTAuth\Providers\LaravelServiceProvider::class);
     }
 

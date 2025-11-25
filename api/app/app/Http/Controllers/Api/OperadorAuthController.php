@@ -9,12 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class OperadorAuthController extends Controller
 {
-    use RefreshDatabase;
-
     public function register(Request $request)
     {
         $request->validate([
