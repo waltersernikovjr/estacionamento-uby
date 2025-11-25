@@ -58,14 +58,14 @@ class ClienteAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'cpf' => 'required|string|size:11',
+            'email' => 'required|string|size:11',
             'password' => 'required|string',
         ]);
 
-        $cliente = Cliente::where('cpf', $request->cpf)->first();
+        $cliente = Cliente::where('email', $request->cpf)->first();
 
         if (!$cliente || !Hash::check($request->password, $cliente->password)) {
-            return response()->json(['error' => 'CPF ou senha incorretos.'], 401);
+            return response()->json(['error' => 'Email ou senha incorretos.'], 401);
         }
 
         $token = JWTAuth::fromUser($cliente);

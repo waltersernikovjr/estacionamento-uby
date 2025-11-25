@@ -36,14 +36,14 @@ class OperadorAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'cpf' => 'required|email',
             'password' => 'required',
         ]);
 
-        $operador = Operador::where('email', $request->email)->first();
+        $operador = Operador::where('cpf', $request->email)->first();
 
         if (!$operador || !Hash::check($request->password, $operador->password)) {
-            return response()->json(['error' => 'Email ou senha incorretos.'], 401);
+            return response()->json(['error' => 'CPF ou senha incorretos.'], 401);
         }
 
         $token = JWTAuth::fromUser($operador);
