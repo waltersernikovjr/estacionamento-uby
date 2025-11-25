@@ -24,7 +24,7 @@ class OperatorController extends Controller
     public function index(): AnonymousResourceCollection
     {
         $operators = $this->operatorService->list();
-        
+
         return OperatorResource::collection($operators);
     }
 
@@ -94,5 +94,25 @@ class OperatorController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    public function stats(): JsonResponse
+    {
+        $totalSpots = \App\Infrastructure\Persistence\Models\ParkingSpot::count();
+        $availableSpots = \App\Infrastructure\Persistence\Models\ParkingSpot::where('status', 'available')->count();
+        $activeReservations = \App\Infrastructure\Persistence\Models\Reservation::where('status', 'active')->count();
+
+        $todayRevenue = \App\Infrastructure\Persistence\Models\Reservation::where('status', 'completed')
+            ->whereDate('exit_time', today())
+            ->sum('total_amount');
+
+        return response()->json([
+            'data' => [
+                'total_spots' => $totalSpots,
+                'available_spots' => $availableSpots,
+                'active_reservations' => $activeReservations,
+                'today_revenue' => (float) $todayRevenue,
+            ],
+        ]);
     }
 }

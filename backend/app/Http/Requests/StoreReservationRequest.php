@@ -16,7 +16,7 @@ class StoreReservationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
             'parking_spot_id' => ['required', 'integer', 'exists:parking_spots,id'],
             'entry_time' => ['required', 'date'],

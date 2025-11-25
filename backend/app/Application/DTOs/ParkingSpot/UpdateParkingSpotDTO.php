@@ -10,6 +10,9 @@ final readonly class UpdateParkingSpotDTO
         public ?string $number = null,
         public ?string $type = null,
         public ?string $status = null,
+        public ?float $hourly_price = null,
+        public ?float $width = null,
+        public ?float $length = null,
     ) {
     }
 
@@ -19,6 +22,9 @@ final readonly class UpdateParkingSpotDTO
             'number' => $this->number,
             'type' => $this->type,
             'status' => $this->status,
+            'hourly_price' => $this->hourly_price,
+            'width' => $this->width,
+            'length' => $this->length,
         ], fn($value) => $value !== null);
     }
 }

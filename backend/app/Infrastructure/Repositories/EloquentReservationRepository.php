@@ -27,7 +27,7 @@ final class EloquentReservationRepository implements ReservationRepositoryInterf
 
     public function getByCustomer(int $customerId): Collection
     {
-        return Reservation::with(['vehicle', 'parkingSpot', 'payment'])
+        return Reservation::with(['vehicle', 'parkingSpot.operator', 'payment'])
             ->where('customer_id', $customerId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -58,13 +58,13 @@ final class EloquentReservationRepository implements ReservationRepositoryInterf
     public function complete(int $id, array $data): ?Reservation
     {
         $reservation = Reservation::find($id);
-        
+
         if (!$reservation) {
             return null;
         }
-        
+
         $reservation->update(array_merge($data, ['status' => 'completed']));
-        
+
         return $reservation->fresh();
     }
 

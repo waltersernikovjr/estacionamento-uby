@@ -23,23 +23,23 @@ class ParkingSpotController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $parkingSpots = $this->parkingSpotService->list();
-        
+        $parkingSpots = $this->parkingSpotService->listAll();
+
         return ParkingSpotResource::collection($parkingSpots);
     }
 
-    public function available(): JsonResponse
+    public function available(): AnonymousResourceCollection
     {
         $parkingSpots = $this->parkingSpotService->getAvailable();
-        
-        return response()->json([
-            'data' => ParkingSpotResource::collection($parkingSpots),
-        ]);
+
+        return ParkingSpotResource::collection($parkingSpots);
     }
 
     public function store(StoreParkingSpotRequest $request): JsonResponse
     {
         try {
+            $operatorId = $request->input('operator_id') ?? auth()->user()->id;
+
             $dto = new CreateParkingSpotDTO(
                 number: $request->input('number'),
                 type: $request->input('type'),
@@ -47,7 +47,7 @@ class ParkingSpotController extends Controller
                 width: (float) $request->input('width', 2.50),
                 length: (float) $request->input('length', 5.00),
                 status: $request->input('status', 'available'),
-                operator_id: $request->input('operator_id'),
+                operator_id: $operatorId,
             );
 
             $parkingSpot = $this->parkingSpotService->create($dto);
@@ -82,6 +82,9 @@ class ParkingSpotController extends Controller
                 number: $request->input('number'),
                 type: $request->input('type'),
                 status: $request->input('status'),
+                hourly_price: $request->has('hourly_price') ? (float) $request->input('hourly_price') : null,
+                width: $request->has('width') ? (float) $request->input('width') : null,
+                length: $request->has('length') ? (float) $request->input('length') : null,
             );
 
             $parkingSpot = $this->parkingSpotService->update((int) $id, $dto);

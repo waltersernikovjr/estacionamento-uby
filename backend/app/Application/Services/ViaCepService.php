@@ -21,7 +21,7 @@ final class ViaCepService
         }
 
         $cacheKey = "viacep_{$zipCode}";
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($zipCode) {
             try {
                 $response = Http::timeout(10)
@@ -56,7 +56,7 @@ final class ViaCepService
     {
         $zipCode = preg_replace('/\D/', '', $zipCode);
         $cacheKey = "viacep_{$zipCode}";
-        
+
         return Cache::forget($cacheKey);
     }
 }

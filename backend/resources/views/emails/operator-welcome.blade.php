@@ -65,27 +65,27 @@
         <div class="header">
             <h1>👨‍💼 Sistema Operacional Uby</h1>
         </div>
-        
+
         <div class="content">
             <h2>Olá, {{ $operator->name }}! 👋</h2>
-            
+
             <p>Bem-vindo ao <strong>Sistema de Gerenciamento de Estacionamento Uby</strong>!</p>
-            
+
             <p>Seu cadastro como operador foi criado com sucesso. Para ativar sua conta e começar a gerenciar as vagas, confirme seu endereço de email.</p>
-            
+
             <div style="text-align: center;">
                 <a href="{{ $verificationUrl }}" class="button">
                     ✅ Confirmar Email
                 </a>
             </div>
-            
+
             <div class="info-box">
                 <strong>📋 Seus dados cadastrados:</strong><br>
                 <strong>Nome:</strong> {{ $operator->name }}<br>
                 <strong>Email:</strong> {{ $operator->email }}<br>
                 <strong>CPF:</strong> {{ $operator->cpf }}
             </div>
-            
+
             <p><strong>🔐 Como operador, você poderá:</strong></p>
             <ul>
                 <li>Gerenciar vagas de estacionamento</li>
@@ -93,18 +93,18 @@
                 <li>Atender clientes via chat</li>
                 <li>Gerar relatórios</li>
             </ul>
-            
+
             <p><strong>⚠️ Importante:</strong></p>
             <ul>
                 <li>Este link expira em <strong>24 horas</strong></li>
                 <li>Após confirmar, você terá acesso total ao sistema</li>
                 <li>Mantenha suas credenciais seguras</li>
             </ul>
-            
+
             <p>Caso o botão não funcione, copie e cole este link no navegador:</p>
             <p style="word-break: break-all; color: #28a745;">{{ $verificationUrl }}</p>
         </div>
-        
+
         <div class="footer">
             <p>© 2025 Estacionamento Uby - Muzambinho/MG</p>
             <p>Este é um email automático, por favor não responda.</p>
