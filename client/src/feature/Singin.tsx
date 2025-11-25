@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { LoginForm } from "../components/forms/LoginForm";
-import { RegisterCliente } from "../components/forms/RegisterClienteForm";
+import { RegisterClienteForm } from "../components/forms/RegisterClienteForm";
 import { RegisterOperadorForm } from "../components/forms/RegisterOperadorForm";
+import { LoginOperadorForm } from "../components/forms/LoginOperadorForm";
+import { LoginClienteForm } from "../components/forms/LoginClienteForm";
 
 export const Singin = () => {
     const [toggle, setToggle] = useState<boolean>(false)
@@ -28,12 +29,10 @@ export const Singin = () => {
         </div>
 
         <div className="flex flex-col items-center ">
-
-            <h1 className="text-5xl p-5">{register ? 'Registro como ' : 'Login como '} {toggle ? 'Operador' : 'Cliente'}</h1>
             {
                 register ?
-                    toggle ? <RegisterOperadorForm /> : <RegisterCliente />
-                    : <LoginForm toggle={toggle} />
+                    toggle ? <RegisterOperadorForm /> : <RegisterClienteForm />
+                    : toggle ? <LoginOperadorForm /> : <LoginClienteForm />
             }
             {
                 !register ?

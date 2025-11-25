@@ -29,7 +29,7 @@ export const RegisterOperadorValidator = Joi.object({
     })
 });
 
-export const LoginOperador = Joi.object({
+export const LoginOperadorValidation = Joi.object({
     cpf: Joi.string().required(),
     password: Joi.string().required(),
 });

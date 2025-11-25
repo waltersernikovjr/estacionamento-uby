@@ -1,15 +1,21 @@
 import CreateVagas from "./application/CreateVaga";
 import GetVagas from "./application/GetVagas";
+import LoginCliente from "./application/LoginCliente";
+import LoginOperador from "./application/LoginOperador";
+import RegisterCliente from "./application/RegisterCliente";
 import { RegisterOperador } from "./application/RegisterOperador";
+import UpdateVaga from "./application/UpdateVaga";
 import { DIProvider } from "./di/DIContext";
 import { VagasStatus } from "./enum/VagaStatus";
 import { Home } from "./feature/Home";
+import { InmemoryClienteGateway } from "./gateway/ClienteGateway";
 import { InmemoryOperadorGateway } from "./gateway/OperadorGateway";
 import { InmemoryVagaGateway } from "./gateway/VagaGateway";
 
 function App() {
   const container = new Map<string, any>();
 
+  const clienteGateway = new InmemoryClienteGateway();
   const operadorGateway = new InmemoryOperadorGateway();
   const vagaGateway = new InmemoryVagaGateway([
     {
@@ -122,6 +128,11 @@ function App() {
   container.set('registerOperador', new RegisterOperador(operadorGateway));
   container.set('getVagas', new GetVagas(vagaGateway));
   container.set('createVaga', new CreateVagas(vagaGateway));
+  container.set('updateVaga', new UpdateVaga(vagaGateway));
+  container.set('registerCliente', new RegisterCliente(clienteGateway));
+
+  container.set('loginCliente', new LoginCliente(clienteGateway));
+  container.set('loginOperador', new LoginOperador(operadorGateway));
 
   return (
     <DIProvider container={container}>

@@ -14,6 +14,7 @@ export const Home = () => {
 
         const handler = (e: any) => {
             if (e.detail.key === "user") {
+                if (e.detail.value === null) setUser(null);
                 setUser(e.detail.value);
             }
         };
@@ -24,8 +25,8 @@ export const Home = () => {
 
     return (
         <div>
-            <div className="h-20 bg-blue-950">
-
+            <div className="h-20 bg-blue-950 flex flex-row-reverse">
+                {user ? <button className="m-2 cursor-pointer" onClick={() => LocalStorageUtil.set("user", null)}>Logout</button> : <></>}
             </div>
             {!user ? <div className="flex justify-evenly p-4"><Singin /></div> : <Vagas />}
         </div>

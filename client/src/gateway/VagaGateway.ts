@@ -4,10 +4,21 @@ import type { Vaga } from "../model/Vaga";
 export interface VagaGateway {
     get(): Promise<Array<Vaga>>;
     create(vaga: Vaga): Promise<Vaga>;
+    update(vaga: Vaga): Promise<Vaga>;
 }
 
 export class InmemoryVagaGateway implements VagaGateway {
     constructor(private readonly _vagas: Array<Vaga> = []) { }
+
+    async update(vaga: Vaga): Promise<Vaga> {
+        if (vaga.status === VagasStatus.LIVRE) {
+            vaga.status = VagasStatus.OCUPADA;
+        } else {
+            vaga.status = VagasStatus.LIVRE;
+        }
+
+        return vaga;
+    }
 
     async get(): Promise<Array<Vaga>> {
         return this._vagas;

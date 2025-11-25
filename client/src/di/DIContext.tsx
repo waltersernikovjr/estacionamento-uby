@@ -18,7 +18,5 @@ export function useDI<T>(key: string): T {
 
 
 export const DIProvider = ({ children, container }: { children: React.ReactNode, container: Map<string, any> }) => {
-
-
     return <DIContext.Provider value={container}>{children}</DIContext.Provider>;
 };
