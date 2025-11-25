@@ -81,7 +81,6 @@ class CustomerAuthController extends Controller
             ]);
         }
 
-        // Check if email is verified
         if ($customer->email_verified_at === null) {
             throw ValidationException::withMessages([
                 'email' => ['Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada.'],

@@ -47,11 +47,10 @@ class StoreParkingSpotRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        // Adicionar valores padrão se não fornecidos
         $this->merge([
-            'hourly_price' => $this->input('hourly_price', 5.00), // R$ 5/hora padrão
-            'width' => $this->input('width', 2.50), // 2.5 metros padrão
-            'length' => $this->input('length', 5.00), // 5 metros padrão
+            'hourly_price' => $this->input('hourly_price', 5.00),
+            'width' => $this->input('width', 2.50),
+            'length' => $this->input('length', 5.00),
             'status' => $this->input('status', 'available'),
         ]);
     }

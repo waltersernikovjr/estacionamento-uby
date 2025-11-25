@@ -10,6 +10,7 @@ use App\Domain\Contracts\Repositories\ReservationRepositoryInterface;
 use App\Infrastructure\Persistence\Models\Reservation;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 final class ReservationService
 {
@@ -24,6 +25,13 @@ final class ReservationService
         return $this->reservationRepository->paginate($perPage);
     }
 
+    public function listAll(): Collection
+    {
+        return Reservation::with(['customer', 'vehicle', 'parkingSpot'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
     public function findById(int $id): ?Reservation
     {
         return $this->reservationRepository->findById($id);
@@ -32,6 +40,18 @@ final class ReservationService
     public function findActiveBySpot(int $parkingSpotId): ?Reservation
     {
         return $this->reservationRepository->findActiveBySpot($parkingSpotId);
+    }
+
+    public function findByCustomer(int $customerId): Collection
+    {
+        return $this->reservationRepository->getByCustomer($customerId);
+    }
+
+    public function hasActiveReservationForVehicle(int $vehicleId): bool
+    {
+        return Reservation::where('vehicle_id', $vehicleId)
+            ->where('status', 'active')
+            ->exists();
     }
 
     public function create(CreateReservationDTO $dto): Reservation
@@ -68,7 +88,10 @@ final class ReservationService
             throw new \InvalidArgumentException('Only active reservations can be completed');
         }
 
-        $totalAmount = $this->calculateAmount($reservation->entry_time, $exitTime);
+        $parkingSpot = $this->parkingSpotService->findById($reservation->parking_spot_id);
+        $hourlyPrice = $parkingSpot ? (float) $parkingSpot->hourly_price : 5.0;
+
+        $totalAmount = $this->calculateAmount($reservation->entry_time, $exitTime, $hourlyPrice);
 
         $dto = new CompleteReservationDTO(
             exit_time: $exitTime,
@@ -108,16 +131,15 @@ final class ReservationService
         return $this->findById($id);
     }
 
-    private function calculateAmount(Carbon $entryTime, Carbon $exitTime): float
+    private function calculateAmount(Carbon $entryTime, Carbon $exitTime, float $hourlyPrice = 5.0): float
     {
         $hours = $entryTime->diffInHours($exitTime);
         $minutes = $entryTime->copy()->addHours($hours)->diffInMinutes($exitTime);
 
-        $amount = $hours * 5.0;
+        $amount = $hours * $hourlyPrice;
 
         if ($minutes > 0) {
-            $additionalBlocks = ceil($minutes / 15);
-            $amount += $additionalBlocks * 1.0;
+            $amount += ($minutes / 60) * $hourlyPrice;
         }
 
         return round($amount, 2);

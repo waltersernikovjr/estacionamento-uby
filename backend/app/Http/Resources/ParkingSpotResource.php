@@ -16,6 +16,10 @@ class ParkingSpotResource extends JsonResource
             'number' => $this->number,
             'type' => $this->type,
             'status' => $this->status,
+            'hourly_price' => (float) $this->hourly_price,
+            'width' => (float) $this->width,
+            'length' => (float) $this->length,
+            'operator_id' => $this->operator_id,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

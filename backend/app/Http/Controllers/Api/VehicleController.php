@@ -24,19 +24,19 @@ class VehicleController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        if ($request->has('customer_id')) {
-            $vehicles = $this->vehicleService->findByCustomer((int) $request->input('customer_id'));
-            return VehicleResource::collection($vehicles);
-        }
+        $customerId = $request->input('customer_id') ?? auth()->user()->id;
+        $vehicles = $this->vehicleService->findByCustomer((int) $customerId);
 
-        return VehicleResource::collection([]);
+        return VehicleResource::collection($vehicles);
     }
 
     public function store(StoreVehicleRequest $request): JsonResponse
     {
         try {
+            $customerId = $request->input('customer_id') ?? auth()->user()->id;
+
             $dto = new CreateVehicleDTO(
-                customer_id: (int) $request->input('customer_id'),
+                customer_id: (int) $customerId,
                 license_plate: $request->input('license_plate'),
                 brand: $request->input('brand'),
                 model: $request->input('model'),

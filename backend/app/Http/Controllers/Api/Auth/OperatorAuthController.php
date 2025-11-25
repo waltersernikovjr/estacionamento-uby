@@ -19,7 +19,7 @@ class OperatorAuthController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'cpf' => ['required', 'string', 'size:14', 'unique:operators'],
+            'cpf' => ['required', 'string', 'size:11', 'unique:operators'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:operators'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -64,7 +64,6 @@ class OperatorAuthController extends Controller
             ]);
         }
 
-        // Check if email is verified
         if ($operator->email_verified_at === null) {
             throw ValidationException::withMessages([
                 'email' => ['Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada.'],
