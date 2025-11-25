@@ -1,5 +1,13 @@
 # GitHub Copilot Instructions - Estacionamento Uby
 
+## 📚 LEITURA OBRIGATÓRIA
+
+**SEMPRE** leia os seguintes arquivos antes de gerar qualquer código:
+
+1. **`.ai-guidelines.md`** - Regras críticas de código limpo (SEM comentários redundantes!)
+2. **`.ai-context.md`** - Checklist obrigatório de qualidade e workflow
+3. **Este arquivo** - Padrões de arquitetura específicos do projeto
+
 ## 🎯 Objetivos do Sistema
 
 ### Funcionalidades Principais:
