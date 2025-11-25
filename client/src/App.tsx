@@ -9,8 +9,8 @@ import UpdateVaga from "./application/UpdateVaga";
 import { DIProvider } from "./di/DIContext";
 import { VagasStatus } from "./enum/VagaStatus";
 import { Home } from "./feature/Home";
-import { InmemoryClienteGateway } from "./gateway/ClienteGateway";
-import { InmemoryOperadorGateway } from "./gateway/OperadorGateway";
+import { HttpClienteGateway, InmemoryClienteGateway } from "./gateway/ClienteGateway";
+import { HttpOperadorGateway, InmemoryOperadorGateway } from "./gateway/OperadorGateway";
 import { InmemoryVagaGateway } from "./gateway/VagaGateway";
 import SocketClient from "./util/SocketClientUtil";
 
@@ -127,14 +127,17 @@ function App() {
     },
   ]);
 
-  container.set('registerOperador', new RegisterOperador(operadorGateway));
+  const httpOperadorGateway = new HttpOperadorGateway();
+  const httpClienteGateway = new HttpClienteGateway();
+
+  container.set('registerOperador', new RegisterOperador(httpOperadorGateway));
   container.set('getVagas', new GetVagas(vagaGateway));
   container.set('createVaga', new CreateVagas(vagaGateway));
   container.set('updateVaga', new UpdateVaga(vagaGateway));
-  container.set('registerCliente', new RegisterCliente(clienteGateway));
+  container.set('registerCliente', new RegisterCliente(httpClienteGateway));
 
-  container.set('loginCliente', new LoginCliente(clienteGateway));
-  container.set('loginOperador', new LoginOperador(operadorGateway));
+  container.set('loginCliente', new LoginCliente(httpClienteGateway));
+  container.set('loginOperador', new LoginOperador(httpOperadorGateway));
   container.set('socketClient', new SocketClient(io('ws://localhost:3000')))
 
   return (
