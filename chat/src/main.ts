@@ -1,5 +1,6 @@
 /* import { RedisAdapter } from "@socket.io/redis-adapter";
- */import { Server } from "socket.io"
+ */
+import { Server } from "socket.io";
 
 // Caso queria colocar um adapter para escalar a aplicação horizontalmente
 const io = new Server({ /* adapter: RedisAdapter */
@@ -9,6 +10,11 @@ const io = new Server({ /* adapter: RedisAdapter */
     }
 
 });
+
+type User = {
+    userId: number;
+    nome: string
+}
 
 const AddListener = (handlerFn: (payload: any) => any) => {
     return (...agrs: any[]) => {
@@ -24,22 +30,15 @@ const AddListener = (handlerFn: (payload: any) => any) => {
 }
 
 
-
-
 io.on("connection", (socket) => {
     socket.on("join", AddListener((payload: { userId: number }) => {
-        console.log(payload);
-
-        socket.join(`user-${payload.userId}`);
+        socket.join(`${payload.userId}`);
 
         return { conected: true }
     }));
 
-
-    socket.on("chat", AddListener((payload: { content: string, for: number }) => {
-
-
-        socket.to(`user-${payload.for}`).emit('message-receive', { message: payload.content })
+    socket.on("chat", AddListener((payload: { content: string, to: User, from: User }) => {
+        socket.to(`${payload.to}`).emit('message-receive', { message: payload.content, from: payload.from })
     }));
 });
 

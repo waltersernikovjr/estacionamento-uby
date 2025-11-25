@@ -9,9 +9,7 @@ export default class SocketClient {
 
     public async send<T>(eventName: string, data: any): Promise<T> {
         return new Promise((res) => {
-            this._socket.send(eventName, data, (data: any) => {
-                console.log(data);
-
+            this._socket.emit(eventName, data, (data: any) => {
                 res(data)
             })
         })
