@@ -11,42 +11,51 @@ interface CreateVehicleData {
 }
 
 interface UpdateVehicleData {
+  license_plate?: string;
   brand?: string;
   model?: string;
   color?: string;
-  year?: number;
+  vehicle_type?: 'car' | 'motorcycle' | 'truck';
+  type?: 'car' | 'motorcycle' | 'truck';
 }
 
 export const vehicleApi = {
-  // Listar meus veículos
+  
   async getMyVehicles(): Promise<Vehicle[]> {
     const response = await httpClient.get<ApiResponse<Vehicle[]>>('/vehicles');
-    // Mapear 'type' do backend para 'vehicle_type' do frontend
+    
     return response.data.data.map(v => ({
       ...v,
       vehicle_type: v.type || (v as any).vehicle_type
     } as Vehicle));
   },
 
-  // Buscar veículo específico
+  
   async getVehicleById(id: number): Promise<Vehicle> {
     const response = await httpClient.get<ApiResponse<Vehicle>>(`/vehicles/${id}`);
     return response.data.data;
   },
 
-  // Criar veículo
+  
   async createVehicle(data: CreateVehicleData): Promise<Vehicle> {
     const response = await httpClient.post<ApiResponse<Vehicle>>('/vehicles', data);
     return response.data.data;
   },
 
-  // Atualizar veículo
+  
   async updateVehicle(id: number, data: UpdateVehicleData): Promise<Vehicle> {
-    const response = await httpClient.put<ApiResponse<Vehicle>>(`/vehicles/${id}`, data);
+    const payload: any = {
+      ...data,
+      type: data.vehicle_type || data.type,
+    };
+    delete payload.vehicle_type;
+    delete payload.license_plate;
+    
+    const response = await httpClient.put<ApiResponse<Vehicle>>(`/vehicles/${id}`, payload);
     return response.data.data;
   },
 
-  // Deletar veículo
+  
   async deleteVehicle(id: number): Promise<void> {
     await httpClient.delete(`/vehicles/${id}`);
   },

@@ -23,6 +23,7 @@ export function CustomerDashboard() {
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
   const [isVehicleSelectionOpen, setIsVehicleSelectionOpen] = useState(false);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
 
   useEffect(() => {
     loadData();
@@ -133,12 +134,50 @@ export function CustomerDashboard() {
     vehicle_type: 'car' | 'motorcycle' | 'truck';
   }) => {
     try {
-      await parkingApi.addVehicle(data);
-      alert('✅ Veículo cadastrado com sucesso!');
+      if (editingVehicle) {
+        await vehicleApi.updateVehicle(editingVehicle.id, data);
+        alert('✅ Veículo atualizado com sucesso!');
+      } else {
+        await parkingApi.addVehicle(data);
+        alert('✅ Veículo cadastrado com sucesso!');
+      }
+      setEditingVehicle(null);
       loadData();
     } catch (err: any) {
-      console.error('Erro ao cadastrar veículo:', err);
-      throw new Error(err?.response?.data?.message || 'Erro ao cadastrar veículo');
+      console.error('Erro ao salvar veículo:', err);
+      throw err;
+    }
+  };
+
+  const handleEditVehicle = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    setIsVehicleModalOpen(true);
+  };
+
+  const handleCloseVehicleModal = () => {
+    setIsVehicleModalOpen(false);
+    setEditingVehicle(null);
+  };
+
+  const handleDeleteVehicle = async (id: number) => {
+    if (!confirm('Deseja realmente excluir este veículo?')) return;
+
+    try {
+      await parkingApi.removeVehicle(id);
+      alert('✅ Veículo excluído com sucesso!');
+      loadData();
+    } catch (err: any) {
+      console.error('Erro ao excluir veículo:', err);
+      
+      const errorMessage = err?.response?.data?.message;
+      
+      if (errorMessage) {
+        alert(`❌ ${errorMessage}`);
+      } else if (err?.response?.status === 500) {
+        alert('❌ Não foi possível excluir o veículo. Verifique se ele possui reservas associadas.');
+      } else {
+        alert('❌ Erro ao excluir veículo');
+      }
     }
   };
 
@@ -331,21 +370,43 @@ export function CustomerDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {myVehicles.map((vehicle) => (
                   <div key={vehicle.id} className="card">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      {vehicle.brand} {vehicle.model}
-                    </h3>
-                    <div className="space-y-1 text-sm">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {vehicle.brand} {vehicle.model}
+                      </h3>
+                      <span className="text-2xl">
+                        {vehicle.vehicle_type === 'car' && '🚗'}
+                        {vehicle.vehicle_type === 'motorcycle' && '🏍️'}
+                        {vehicle.vehicle_type === 'truck' && '🚚'}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-sm mb-4">
                       <p className="text-gray-600">
                         <span className="font-semibold">Placa:</span> {vehicle.license_plate}
                       </p>
                       <p className="text-gray-600">
                         <span className="font-semibold">Cor:</span> {vehicle.color}
                       </p>
-                      {vehicle.year && (
-                        <p className="text-gray-600">
-                          <span className="font-semibold">Ano:</span> {vehicle.year}
-                        </p>
-                      )}
+                      <p className="text-gray-600">
+                        <span className="font-semibold">Tipo:</span> {
+                          vehicle.vehicle_type === 'car' ? 'Carro' :
+                          vehicle.vehicle_type === 'motorcycle' ? 'Moto' : 'Caminhão'
+                        }
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditVehicle(vehicle)}
+                        className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-xl text-sm font-semibold hover:bg-blue-200 transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteVehicle(vehicle.id)}
+                        className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-200 transition-colors"
+                      >
+                        Excluir
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -358,8 +419,9 @@ export function CustomerDashboard() {
       {/* Modal de Cadastro de Veículo */}
       <VehicleFormModal
         isOpen={isVehicleModalOpen}
-        onClose={() => setIsVehicleModalOpen(false)}
+        onClose={handleCloseVehicleModal}
         onSubmit={handleAddVehicle}
+        editingVehicle={editingVehicle}
       />
 
       {/* Modal de Seleção de Veículo */}

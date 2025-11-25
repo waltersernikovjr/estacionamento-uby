@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
+import type { Vehicle } from '../../../domain/types';
 
 interface VehicleFormData {
   license_plate: string;
@@ -12,9 +13,10 @@ interface VehicleFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: VehicleFormData) => Promise<void>;
+  editingVehicle?: Vehicle | null;
 }
 
-export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModalProps) {
+export function VehicleFormModal({ isOpen, onClose, onSubmit, editingVehicle }: VehicleFormModalProps) {
   const [formData, setFormData] = useState<VehicleFormData>({
     license_plate: '',
     brand: '',
@@ -24,6 +26,31 @@ export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModal
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Preencher formulário quando estiver editando
+  useEffect(() => {
+    if (isOpen) {
+      setError('');
+      
+      if (editingVehicle) {
+        setFormData({
+          license_plate: editingVehicle.license_plate,
+          brand: editingVehicle.brand,
+          model: editingVehicle.model,
+          color: editingVehicle.color,
+          vehicle_type: editingVehicle.vehicle_type,
+        });
+      } else {
+        setFormData({
+          license_plate: '',
+          brand: '',
+          model: '',
+          color: '',
+          vehicle_type: 'car',
+        });
+      }
+    }
+  }, [editingVehicle, isOpen]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -42,7 +69,25 @@ export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModal
       });
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Erro ao cadastrar veículo');
+      const response = err?.response;
+      const backendMessage = response?.data?.message;
+      const validationErrors = response?.data?.errors;
+      
+      if (validationErrors && Object.keys(validationErrors).length > 0) {
+        const plateError = validationErrors.license_plate;
+        if (plateError) {
+          setError(Array.isArray(plateError) ? plateError[0] : plateError);
+        } else {
+          const firstError = Object.values(validationErrors)[0];
+          setError(Array.isArray(firstError) ? firstError[0] : String(firstError));
+        }
+      } else if (backendMessage) {
+        setError(backendMessage);
+      } else if (response?.statusText) {
+        setError(`Erro ${response.status}: ${response.statusText}`);
+      } else {
+        setError('Erro ao salvar veículo. Tente novamente.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -50,6 +95,11 @@ export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModal
 
   const handleChange = (field: keyof VehicleFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePlateChange = (value: string) => {
+    const cleaned = value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    handleChange('license_plate', cleaned);
   };
 
   if (!isOpen) return null;
@@ -60,7 +110,7 @@ export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModal
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              Cadastrar Veículo
+              {editingVehicle ? 'Editar Veículo' : 'Cadastrar Veículo'}
             </h2>
             <button
               onClick={onClose}
@@ -83,18 +133,36 @@ export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModal
             {/* Placa */}
             <div>
               <label htmlFor="license_plate" className="block text-sm font-medium text-gray-700 mb-2">
-                Placa *
+                Placa * <span className="text-xs text-gray-500">(7 caracteres, ex: ABC1D23)</span>
               </label>
-              <input
-                id="license_plate"
-                type="text"
-                value={formData.license_plate}
-                onChange={(e) => handleChange('license_plate', e.target.value.toUpperCase())}
-                className="input-field"
-                placeholder="ABC-1234"
-                maxLength={8}
-                required
-              />
+              <div className="relative">
+                <input
+                  id="license_plate"
+                  type="text"
+                  value={formData.license_plate}
+                  onChange={(e) => handlePlateChange(e.target.value)}
+                  className={`input-field ${editingVehicle ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="ABC1D23"
+                  maxLength={7}
+                  disabled={!!editingVehicle}
+                  required
+                />
+                {editingVehicle && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+              {editingVehicle && (
+                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                  </svg>
+                  A placa não pode ser alterada após o cadastro
+                </p>
+              )}
             </div>
 
             {/* Tipo de Veículo */}
@@ -178,7 +246,10 @@ export function VehicleFormModal({ isOpen, onClose, onSubmit }: VehicleFormModal
                 className="flex-1 btn-primary"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
+                {isSubmitting 
+                  ? (editingVehicle ? 'Salvando...' : 'Cadastrando...') 
+                  : (editingVehicle ? 'Salvar' : 'Cadastrar')
+                }
               </button>
             </div>
           </form>
