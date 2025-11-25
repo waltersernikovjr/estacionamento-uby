@@ -23,7 +23,8 @@ final class EloquentVehicleRepository implements VehicleRepositoryInterface
 
     public function update(int $id, array $data): bool
     {
-        return Vehicle::where('id', $id)->update($data);
+        $affected = Vehicle::where('id', $id)->update($data);
+        return $affected > 0;
     }
 
     public function delete(int $id): bool
@@ -48,6 +49,8 @@ final class EloquentVehicleRepository implements VehicleRepositoryInterface
 
     public function licensePlateExists(string $licensePlate): bool
     {
-        return Vehicle::where('license_plate', $licensePlate)->exists();
+        return Vehicle::where('license_plate', $licensePlate)
+            ->whereNull('deleted_at')
+            ->exists();
     }
 }
