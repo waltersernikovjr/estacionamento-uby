@@ -9,7 +9,7 @@ use App\Domain\Contracts\Repositories\ReservationRepositoryInterface;
 use App\Infrastructure\Persistence\Models\ParkingSpot;
 use App\Infrastructure\Persistence\Models\Reservation;
 use Carbon\Carbon;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class ReservationServiceTest extends TestCase
 {
@@ -20,7 +20,7 @@ class ReservationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->repository = $this->createMock(ReservationRepositoryInterface::class);
         $this->parkingSpotService = $this->createMock(ParkingSpotService::class);
         $this->service = new ReservationService($this->repository, $this->parkingSpotService);
@@ -193,7 +193,7 @@ class ReservationServiceTest extends TestCase
             ->expects($this->once())
             ->method('complete')
             ->with(1, $this->callback(function ($data) use ($exitTime) {
-                return isset($data['exit_time']) 
+                return isset($data['exit_time'])
                     && isset($data['total_amount'])
                     && $data['total_amount'] === 10.0;
             }))
@@ -263,7 +263,7 @@ class ReservationServiceTest extends TestCase
             ->expects($this->once())
             ->method('update')
             ->with(1, $this->callback(function ($data) {
-                return $data['status'] === 'cancelled' 
+                return $data['status'] === 'cancelled'
                     && isset($data['exit_time']);
             }));
 

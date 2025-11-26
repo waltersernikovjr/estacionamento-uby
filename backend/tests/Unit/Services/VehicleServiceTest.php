@@ -8,7 +8,7 @@ use App\Application\Services\VehicleService;
 use App\Domain\Contracts\Repositories\VehicleRepositoryInterface;
 use App\Infrastructure\Persistence\Models\Vehicle;
 use Illuminate\Database\Eloquent\Collection;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class VehicleServiceTest extends TestCase
 {
@@ -18,7 +18,7 @@ class VehicleServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->repository = $this->createMock(VehicleRepositoryInterface::class);
         $this->service = new VehicleService($this->repository);
     }
