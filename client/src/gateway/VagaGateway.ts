@@ -92,7 +92,6 @@ export class HttpVagaGateway extends BaseHttpGateway implements VagaGateway {
             return response.data;
         } catch (error: any) {
             this.handleError(error, "atualização de vaga");
-            throw error;
         }
     }
 }

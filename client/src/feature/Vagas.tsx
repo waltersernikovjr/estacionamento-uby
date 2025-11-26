@@ -10,6 +10,7 @@ import { Role } from "../enum/Role";
 import type { UserProps } from "../model/User";
 import type Result from "../util/Result";
 import type UpdateVaga from "../application/UpdateVaga";
+import { ErrorAlert } from "../components/error/Error";
 
 type Props = {
     vagas: Vaga[];
@@ -23,7 +24,7 @@ export default function ParkingSpotList({ vagas, onAdd, onUpdate }: Props) {
     const user = LocalStorageUtil.get('user') as UserProps;
 
     const handlerVagaUpdate = async (vaga: Vaga) => {
-        await onUpdate(vaga).then(res => res.unwrapOrElse(setError));
+        await onUpdate(vaga);
     }
 
 
@@ -75,6 +76,13 @@ export const Vagas = () => {
     const [vagas, setVagas] = useState<Array<Vaga>>([]);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const handleError = (error: any) => {
+        const msg = error?.message || "Ocorreu um erro inesperado. Tente novamente.";
+        setErrorMessage(msg);
+        setTimeout(() => setErrorMessage(null), 8000);
+    };
 
     const CreateVaga = async (data: AddSpotFormData) => {
         const result = await createVaga.execute(data);
@@ -87,7 +95,13 @@ export const Vagas = () => {
     const UpdateVaga = async (vaga: Vaga) => {
         const result = await updateVaga.execute(vaga);
 
-        if (result.isOk()) await GetVagas();
+        if (result.isError()) {
+            handleError(result.error);
+            console.log(errorMessage);
+
+        } else {
+            await GetVagas();
+        }
 
         return result;
     }
@@ -106,14 +120,20 @@ export const Vagas = () => {
 
     if (loading) return <div className="p-10">Carregando...</div>;
 
-    return <div className="flex p-10 flex-col items-center justify-center">
-        <h1 className="text-3xl p-10">Vagas</h1>
-        <ParkingSpotList vagas={vagas} onAdd={() => setShowForm(true)} onUpdate={UpdateVaga} />
-        {showForm && (
-            <AddSpotForm
-                onSubmit={CreateVaga}
-                onClose={() => setShowForm(false)}
-            />
-        )}
-    </div>
+    return (
+        <>
+            {errorMessage && (
+                <ErrorAlert message={errorMessage} onClose={() => setErrorMessage(null)} />
+            )}
+            <div className="flex p-10 flex-col items-center justify-center">
+                <h1 className="text-3xl p-10">Vagas</h1>
+                <ParkingSpotList vagas={vagas} onAdd={() => setShowForm(true)} onUpdate={UpdateVaga} />
+                {showForm && (
+                    <AddSpotForm
+                        onSubmit={CreateVaga}
+                        onClose={() => setShowForm(false)}
+                    />
+                )}
+            </div>
+        </>)
 }

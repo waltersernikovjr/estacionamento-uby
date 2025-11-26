@@ -2,48 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\CreateCliente;
+use App\Application\LoginCliente;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
-use App\Models\Veiculo;
+use Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class ClienteAuthController extends Controller
 {
+
+    public function __construct(protected CreateCliente $create_cliente, protected LoginCliente $login_cliente) {}
+
     public function register(Request $request)
     {
-        /*         $request->validate([
-            'nome' => 'required|string|max:255',
-            'cpf' => 'required|string|size:11|unique:clientes,cpf',
-            'rg' => 'required|string|unique:clientes,rg',
-            'endereco' => 'required|string',
+        $output = $this->create_cliente->execute($request);
 
-            'veiculo.placa' => 'required|string|unique:veiculos,placa',
-            'veiculo.modelo' => 'required|string|max:100',
-            'veiculo.cor' => 'required|string|max:30',
-            'veiculo.ano' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-
-            'password' => 'required|string|min:6|confirmed',
-        ]); */
-
-        $cliente = Cliente::create([
-            'nome' => $request->nome,
-            'cpf' => $request->cpf,
-            'rg' => $request->rg,
-            'email' => $request->email,
-            'endereco' => $request->endereco,
-            'password' => bcrypt($request->password),
-        ]);
-
-        $cliente->veiculos()->create([
-            'placa' => $request->input('veiculo.placa'),
-            'modelo' => $request->input('veiculo.modelo'),
-            'cor' => $request->input('veiculo.cor'),
-            'ano' => $request->input('veiculo.ano'),
-        ]);
+        $cliente = Cliente::where('id', $output->GetId())->first();
 
         $token = Auth::login($cliente);
 
@@ -52,17 +30,15 @@ class ClienteAuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => config('jwt.ttl') * 60,
-            'user' => $cliente->load('veiculos')
+            'user' => $cliente
         ], 201);
     }
 
     public function login(Request $request)
     {
-        $cliente = Cliente::where('email', $request->email)->first();
+        $output = $this->login_cliente->execute($request);
 
-        if (!$cliente || !Hash::check($request->password, $cliente->password)) {
-            return response()->json(['error' => 'Email ou senha incorretos.'], 401);
-        }
+        $cliente = Cliente::where('id', $output->GetId())->first();
 
         $token = JWTAuth::fromUser($cliente);
 

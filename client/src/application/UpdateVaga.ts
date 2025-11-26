@@ -8,8 +8,10 @@ export default class UpdateVaga {
     public async execute(input: Input) {
         try {
 
-            return this._vagaGateway.update(input).then(Result.Ok);
+            return await this._vagaGateway.update(input).then(Result.Ok);
         } catch (err) {
+            console.log(err);
+
             return Result.Error(err as Error);
         }
     }

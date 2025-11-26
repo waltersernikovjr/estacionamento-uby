@@ -15,7 +15,7 @@ class Vaga extends Model
         'largura',
         'comprimento',
         'disponivel',
-        'tipo', // opcional: moto, carro, pcd, idoso, etc.
+        'tipo',
     ];
 
     protected $casts = [
@@ -59,39 +59,5 @@ class Vaga extends Model
     public function getOcupadaAttribute(): bool
     {
         return ! $this->disponivel;
-    }
-
-    public function scopeDisponiveis($query)
-    {
-        return $query->where('disponivel', true);
-    }
-
-    public function scopeOcupadas($query)
-    {
-        return $query->where('disponivel', false);
-    }
-
-    public function scopeDoTipo($query, $tipo)
-    {
-        return $query->where('tipo', $tipo);
-    }
-
-    public function ocupar(Veiculo $veiculo): EstacionamentoRegistro
-    {
-        if (! $this->disponivel) {
-            throw new \Exception("Vaga {$this->numero} já está ocupada.");
-        }
-
-        $this->update(['disponivel' => false]);
-
-        return $this->registros()->create([
-            'veiculo_id' => $veiculo->id,
-            'entrada'    => now(),
-        ]);
-    }
-
-    public function liberar(): void
-    {
-        $this->update(['disponivel' => true]);
     }
 }
