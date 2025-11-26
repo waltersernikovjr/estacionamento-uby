@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  # ============================
+  # MYSQL
+  # ============================
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  # ============================
+  # API (LARAVEL + PHP)
+  # ============================
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    restart: always
+    volumes:
+      - ./api:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  # ============================
+  # CHAT WEBSOCKET (Node)
+  # ============================
+  chat:
+    build:
+      context: ./chat
+      dockerfile: Dockerfile
+    container_name: chat
+    restart: always
+    volumes:
+      - ./chat:/app
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  # ============================
+  # CLIENT (React / Vite)
+  # ============================
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: client
+    restart: always
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+    depends_on:
+      - api
+      - chat
+
+networks:
+  app-network:
+
+
+volumes:
+  mysql_data:

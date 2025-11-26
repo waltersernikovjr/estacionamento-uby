@@ -1,21 +1,25 @@
 # Arquitetura do Sistema
 
-
 ## 📐 Visão Geral da Arquitetura
 
-O sistema é dividido em três serviços independentes que se comunicam entre si:
+O sistema é composto por três serviços independentes:
 
 * **API Principal (Laravel + MySQL)**
 
-  * Responsável pela autenticação (JWT com RSA), regras de negócio e persistência.
-  * Segue arquitetura MVC do Laravel com Domain Models aplicando regras específicas.
+  * Agora segue **Arquitetura Hexagonal (Ports & Adapters)**.
+  * Toda regra de negócio reside na **Camada de Domínio** (Domain Model + Aggregates + Policies).
+  * A Application Layer contém **Casos de Uso** que orquestram o fluxo.
+  * O Laravel funciona apenas como **Adapter de Entrada (HTTP)** + **Adapter de Persistência (Repositories)**.
+
 * **Cliente Web (React)**
 
-  * Aplicação SPA estruturada em camadas de apresentação (componentes JSX) e camada de casos de uso (use cases) com inversão de dependência.
+  * SPA estruturada em camadas de apresentação, use cases e adaptação de tecnologias.
+  * Use Cases independentes de React, HTTP ou WebSocket.
+
 * **API WebSocket (Node.js)**
 
-  * Gerencia comunicação em tempo real.
-  * Segue uma variante simples de arquitetura Hexagonal com Transaction Scripts.
+  * Segue um design semelhante ao Hexagonal simplificado com Transaction Scripts.
+  * Foca em tempo real, validação JWT e broadcasting.
 
 ---
 
@@ -26,51 +30,53 @@ flowchart LR
     subgraph React [Cliente React]
         UI[Componentes JSX]
         UC[Use Cases]
-        INFRA[Adapters / Gateways]
+        INFRA[Adapters/Gateways]
         UI --> UC --> INFRA
     end
 
     subgraph API [API Principal - Laravel]
-        C[Controllers]
-        M[Models / Domain Model]
+        IN[HTTP Controller]
+        APP[Application Layer]
+        DOM[Domain Model]
+        REPO[Repositories]
         DB[(MySQL)]
-        C --> M --> DB
+        IN --> APP --> DOM
+        APP --> REPO --> DB
     end
 
     subgraph WS [API WebSocket - Node.js]
-        ADP[Adapters]
-        CORE[Heaxagonal/Transaction Scripts]
+        ADP[WS Adapter]
+        CORE[Transaction Scripts]
         ADP --> CORE
     end
 
-    INFRA -- JWT Auth --> C
-    UC -- REST/HTTP --> C
+    INFRA -- Envia JWT --> IN
+    UC -- REST/HTTP --> IN
     UC -- WebSocket --> ADP
-    WS <--> React
 
-    C -- RSA Public Key Validation --> WS
+    React <--> WS
+    API -- RSA Public Key --> WS
 ```
 
 ---
 
 ## 🔐 Autenticação e Segurança
 
-A autenticação ocorre exclusivamente na **API Principal (Laravel)**.
+A autenticação ocorre exclusivamente na **API Hexagonal em Laravel**.
 
-* O usuário envia credenciais e recebe um **JWT assinado com RSA (RS256)**.
-* A API expõe sua **chave pública** para os outros serviços.
-
-  * O WebSocket usa essa chave pública para validar tokens.
-  * O cliente React envia o JWT para ambos os serviços (API + WebSocket).
+* O usuário envia credenciais para um **Controller → Caso de Uso → Domain Model**.
+* O caso de uso retorna um **JWT assinado com RSA (RS256)**.
+* A API disponibiliza sua **chave pública** para validação em serviços externos.
+* O WebSocket valida tokens usando a chave pública.
 
 ```mermaid
 sequenceDiagram
     participant Client as Cliente React
-    participant API as API Laravel
+    participant API as API Laravel (Hexagonal)
     participant WS as API WebSocket
 
-    Client->>API: POST /auth/login (email, senha)
-    API-->>Client: JWT assinado (RS256)
+    Client->>API: POST /auth/login
+    API-->>Client: JWT RS256
     Client->>WS: Conexão WS + JWT
     API-->>WS: Chave Pública RSA
     WS-->>Client: Conexão Estabelecida
@@ -78,32 +84,63 @@ sequenceDiagram
 
 ---
 
-## 🧱 API Principal (Laravel)
+## 🧱 API Principal (Laravel com Arquitetura Hexagonal)
 
-### Padrões Utilizados
+### 📦 Estrutura de Camadas
 
-* **MVC** tradicional do Laravel
-* **Controller** incopora application business rule e componentes externo
-* **Domain Model** incorporado dentro da camada de Model
+A API é organizada em:
 
-### Componentes
+* **Adapters (Entrada/Saída)**
+
+  * HTTP Controllers
+  * Repositories (Eloquent ou Query Builder)
+  * Providers / Serializers
+
+* **Application Layer (Use Cases)**
+
+  * Orquestram lógica
+  * Não conhecem detalhes de infra
+  * Input/Output boundaries
+
+* **Domain Layer**
+
+  * Domain Models
+  * Rules / Policies
+  * Entities
+  * Value Objects
+  * Domain Services
+  * Totalmente puro: sem Laravel, sem DB, sem HTTP
+
+### 🏗 Diagrama Hexagonal Simplificado
 
 ```mermaid
-classDiagram
-    class Controller {
-      +store(request)
-      +update(request)
-    }
-    class DomainModel {
-      +validate()
-      +applyRules()
-      +create()
-      +update()
-      +all
-    }
+flowchart LR
+    subgraph ADP[Adapters]
+        C[HTTP Controller]
+        R[Repository Implementation]
+    end
 
-    Controller --> DomainModel
+    subgraph APP[Application Layer]
+        UC[Use Case]
+    end
+
+    subgraph DOM[Domain Layer]
+        ENT[Entities / Domain Models]
+        VO[Value Objects]
+        DS[Domain Services]
+    end
+
+    C --> UC --> ENT
+    UC --> R
+    R --> DB[(MySQL)]
 ```
+
+### Benefícios da nova estrutura
+
+* Domínio independente do framework
+* Use Cases totalmente testáveis
+* Fácil trocar HTTP por RPC, CLI ou WS
+* Repositórios podem ser trocados sem afetar domínio
 
 ---
 
@@ -111,29 +148,29 @@ classDiagram
 
 ### Organização em Camadas
 
-* **Presentation (JSX Components)**
-
-  * Interfaces visuais.
+* **Presentation (JSX)**
 * **Use Cases**
 
-  * Contêm lógica de aplicação.
-  * Não conhecem detalhes técnicos (HTTP, WS...)
+  * total desacoplamento de biblioteca
+  * orquestram chamadas para REST ou WS
 * **Infra / Adapters**
 
-  * Implementações concretas (APIs, WebSocket, LocalStorage).
-  * Injetados nos use cases.
+  * HTTP (fetch/axios)
+  * WebSocket
+  * LocalStorage
+  * Gateways para API Laravel + WS
 
 ```mermaid
 flowchart TD
     A[Components JSX] --> B[Use Cases]
-    B --> C[(Gateways / Adapters)]
+    B --> C[(Infra / Gateways)]
 ```
 
 ### Benefícios
 
-* Testabilidade elevada
-* Baixo acoplamento com tecnologias
-* Facilidade de substituir HTTP por WebSocket ou RPC
+* Testabilidade alta
+* Fácil trocar HTTP por WebSocket
+* Zero dependência direta de axios ou libs no componente
 
 ---
 
@@ -141,27 +178,29 @@ flowchart TD
 
 ### Arquitetura
 
-Seguindo estilo **Hexagonal simples** baseado em Transaction Scripts.
+* **Adapters WS**
 
-* **Adapters**: recebem mensagens WS
-* **Transaction Scripts**: implementam ações diretas e regras de negocio (ex: enviar mensagem, notificar evento, criar chat)
+  * Recebem mensagens, parse, validação
+* **Transaction Scripts**
+
+  * Executam ações específicas (ex: criar sala, enviar mensagem)
+  * Validam token usando chave RSA
+  * Podem consultar a API Laravel quando necessário
 
 ```mermaid
 flowchart LR
     ADP[WebSocket Adapter] --> CORE[Transaction Script]
 ```
 
-### Responsabilidades
-
-* Validar token JWT usando chave RSA
-* Notificar eventos em tempo real
-* Consumir APIs da API Principal quando necessário
-
 ---
 
 ## 🗄 Banco de Dados (MySQL)
 
-A API principal utiliza MySQL com migrations. O modelo é normalizado de acordo com as entidades da regra de negócio.
+A persistência fica no Adapter de Saída:
+
+* Repositories implementam interfaces definidas no domínio
+* Domain não conhece Eloquent
+* DB pode ser trocado por Redis, DynamoDB, etc.
 
 Exemplo genérico:
 
@@ -183,19 +222,20 @@ erDiagram
 
 ---
 
-## 🧪 Fluxo de Desenvolvimento
+## 🧪 Fluxo de Desenvolvimento (Hexagonal)
 
-### Backend Laravel
+### Laravel (API Principal)
 
-* Controllers chamam Models
-* Models valida regras e presiste
+* Controller → Caso de Uso → Domínio → Repositório
+* Domínio nunca toca framework
+* Casos de uso concentram fluxo
 
 ### React
 
-* Use Case orquestra a regra
-* Component recebe dados e renderiza
+* Use Case orquestra
+* Component só renderiza
 
-### WebSocket API
+### WebSocket
 
 * Adapter recebe evento
 * Transaction Script executa ação
@@ -204,19 +244,27 @@ erDiagram
 
 ## 📦 Deploy & Infraestrutura
 
-* Cada serviço é independente
-* API Laravel roda separada da API WebSocket
-* Cliente React é hospedado como estático (S3, Vercel, etc.)
-* Comunicação segura via HTTPS/WSS
+* Cada serviço é independente (micro frontends + micro APIs)
+* Laravel isolado
+* Node WebSocket isolado
+* React hospedado como estático
+* Comunicação segura via HTTPS / WSS
 
 ---
 
 ## ✔ Benefícios da Arquitetura
 
-* Independência entre serviços
-* Escalabilidade individual (especialmente WebSocket)
-* Separação clara de responsabilidade
-* Código altamente testável
-* Facilidade de evoluir para microservices, RPC, GRPC etc.
+* Máxima separação de responsabilidades
+* Domínio isolado e puro
+* Testes unitários fáceis (Application + Domain)
+* Serviços escaláveis individualmente
+* Fácil evolução para microservices, RPC e mensageria
 
----
+## Estrutura de pasta
+```
+app/
+  Domain/
+  Application/
+  Infrastructure/
+  Http/
+```
