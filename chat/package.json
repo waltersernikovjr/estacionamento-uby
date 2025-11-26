@@ -1,0 +1,33 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts",
+    "exec": "node --loader ts-node/esm ./src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.25",
+    "@types/socket.io": "^3.0.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "nodemon": "^3.1.11",
+    "socket.io": "^4.8.1",
+    "ts-node": "^10.9.2"
+  }
+}
