@@ -1,45 +1,37 @@
 /* import { RedisAdapter } from "@socket.io/redis-adapter";
  */
 import { Server } from "socket.io";
+import SocketServer from "./SocketServer.js";
+import { InmemoryChatDao } from "./data/ChatDao.js";
+import Chat from "./application/Chat.js";
+import GetMessages from "./application/GetMessages.js";
 
 // Caso queria colocar um adapter para escalar a aplicação horizontalmente
-const io = new Server({ /* adapter: RedisAdapter */
-
+const io = new SocketServer(new Server({ /* adapter: RedisAdapter */
     cors: {
-        origin: ["http://localhost:5173"]
+        origin: ["http://127.0.0.1:5173", "http://localhost:5173", "*"]
     }
 
+}))
+
+const chatDao = new InmemoryChatDao();
+
+io.addListener("join", (payload: { userId: number }, socket) => {
+    socket.join(`${payload.userId}`);
+
+    return { conected: true }
 });
 
-type User = {
-    userId: number;
-    nome: string
-}
+io.addListener('get-messages', async (payload: { userId: number }, socket) => {
+    const chats = await new GetMessages(chatDao).execute(payload.userId);
 
-const AddListener = (handlerFn: (payload: any) => any) => {
-    return (...agrs: any[]) => {
-        const [ack, payload] = agrs.reverse();
+    return chats
+})
 
-        if (!ack) return;
+io.addListener("chat", async (payload: any, socket) => {
+    const chat = await new Chat(chatDao).execute(payload)
 
-
-        const response = handlerFn(payload);
-
-        ack(response);
-    }
-}
-
-
-io.on("connection", (socket) => {
-    socket.on("join", AddListener((payload: { userId: number }) => {
-        socket.join(`${payload.userId}`);
-
-        return { conected: true }
-    }));
-
-    socket.on("chat", AddListener((payload: { content: string, to: User, from: User }) => {
-        socket.to(`${payload.to}`).emit('message-receive', { message: payload.content, from: payload.from })
-    }));
+    socket.to(`${payload.to.userId}`).emit('message-receive', chat);
 });
 
-io.listen(3000);
+io.init();

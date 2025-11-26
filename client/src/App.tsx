@@ -11,7 +11,7 @@ import { VagasStatus } from "./enum/VagaStatus";
 import { Home } from "./feature/Home";
 import { HttpClienteGateway, InmemoryClienteGateway } from "./gateway/ClienteGateway";
 import { HttpOperadorGateway, InmemoryOperadorGateway } from "./gateway/OperadorGateway";
-import { InmemoryVagaGateway } from "./gateway/VagaGateway";
+import { HttpVagaGateway, InmemoryVagaGateway } from "./gateway/VagaGateway";
 import SocketClient from "./util/SocketClientUtil";
 
 function App() {
@@ -129,11 +129,13 @@ function App() {
 
   const httpOperadorGateway = new HttpOperadorGateway();
   const httpClienteGateway = new HttpClienteGateway();
+  const httpVagaGateway = new HttpVagaGateway();
 
+  container.set("operadorGateway", httpOperadorGateway);
   container.set('registerOperador', new RegisterOperador(httpOperadorGateway));
-  container.set('getVagas', new GetVagas(vagaGateway));
-  container.set('createVaga', new CreateVagas(vagaGateway));
-  container.set('updateVaga', new UpdateVaga(vagaGateway));
+  container.set('getVagas', new GetVagas(httpVagaGateway));
+  container.set('createVaga', new CreateVagas(httpVagaGateway));
+  container.set('updateVaga', new UpdateVaga(httpVagaGateway));
   container.set('registerCliente', new RegisterCliente(httpClienteGateway));
 
   container.set('loginCliente', new LoginCliente(httpClienteGateway));

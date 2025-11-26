@@ -23,11 +23,24 @@ export class InmemoryClienteGateway implements ClienteGateway {
 export class HttpClienteGateway extends BaseHttpGateway implements ClienteGateway {
     async create(cliente: Partial<Cliente>): Promise<Cliente> {
         try {
-            const response = await this.api.post("/cliente/register", cliente);
-            const { cliente: novoCliente, token } = response.data;
+            const response = await this.api.post("/cliente/register", {
+                nome: cliente.nomeCompleto,
+                cpf: cliente.cpf,
+                rg: cliente.rg,
+                email: cliente.email,
+                endereco: cliente.endereco,
+                password: cliente.password,
+                veiculo: {
+                    placa: cliente.placa,
+                    modelo: cliente.modelo,
+                    cor: cliente.cor,
+                    ano: cliente.ano,
+                }
+            });
+            const { user: novoCliente, access_token } = response.data;
 
-            if (token) {
-                localStorage.setItem("cliente_token", token);
+            if (access_token) {
+                localStorage.setItem("token", access_token);
                 localStorage.setItem("token_type", "cliente"); // opcional: saber quem está logado
             }
 
@@ -40,10 +53,10 @@ export class HttpClienteGateway extends BaseHttpGateway implements ClienteGatewa
     async login(credenciais: { email: string; password: string }): Promise<Cliente> {
         try {
             const response = await this.api.post("/cliente/login", credenciais);
-            const { cliente, token } = response.data;
+            const { user: cliente, access_token } = response.data;
 
-            if (token) {
-                localStorage.setItem("cliente_token", token);
+            if (access_token) {
+                localStorage.setItem("token", access_token);
                 localStorage.setItem("token_type", "cliente");
             }
 

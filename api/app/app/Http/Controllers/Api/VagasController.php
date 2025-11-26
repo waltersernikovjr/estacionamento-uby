@@ -7,9 +7,6 @@ use App\Models\Cliente;
 use App\Models\Vaga;
 use App\Models\Veiculo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class VagasController extends Controller
@@ -21,16 +18,37 @@ class VagasController extends Controller
 
     public function store(Request $request)
     {
-        dd($request->user());
-        $request->validate([
-            'numero' => 'required|unique:vagas',
-            'preco_por_hora' => 'required|numeric|min:0',
-            'largura' => 'required|numeric',
-            'comprimento' => 'required|numeric',
-        ]);
-
         $vaga = Vaga::create($request->all());
 
         return response()->json($vaga, 201);
+    }
+
+    public function ocupar($vagaId)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $vaga = Vaga::findOrFail($vagaId);
+
+        if (!$vaga->disponivel) {
+            $vaga->liberar();
+
+            return response()->json([
+                "ocuped" => false
+            ], 200);
+        }
+
+        $veiculo = Veiculo::where('cliente_id', $user->id)->first();
+
+        if (!$veiculo) {
+            return response()->json([
+                'error' => 'Você não possui nenhum veículo cadastrado.'
+            ], 400);
+        }
+
+        $vaga->ocupar($veiculo);
+
+        return response()->json([
+            "ocuped" => true
+        ], 200);
     }
 }

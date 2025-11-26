@@ -1,6 +1,5 @@
 import { InputError } from "../error/InputError";
 import type { VagaGateway } from "../gateway/VagaGateway";
-import type { Vaga } from "../model/Vaga";
 import Result from "../util/Result";
 import { CreateVagaValidation } from "../validation/VagaValidation";
 
@@ -13,7 +12,13 @@ export default class CreateVagas {
         if (error) return Result.Error(InputError.create(error));
 
         try {
-            return this._vagasGateway.create(input as Vaga).then(Result.Ok);
+            const [largura, comprimento] = input.dimensao.split('x');
+            return this._vagasGateway.create({
+                numero: input.numeroDaVaga,
+                preco_por_hora: input.preco,
+                largura: Number(largura),
+                comprimento: Number(comprimento),
+            }).then(Result.Ok);
         } catch (err) {
             return Result.Error(err as Error);
         }

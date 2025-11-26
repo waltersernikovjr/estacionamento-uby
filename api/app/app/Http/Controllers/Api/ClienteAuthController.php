@@ -15,7 +15,7 @@ class ClienteAuthController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
+        /*         $request->validate([
             'nome' => 'required|string|max:255',
             'cpf' => 'required|string|size:11|unique:clientes,cpf',
             'rg' => 'required|string|unique:clientes,rg',
@@ -27,12 +27,13 @@ class ClienteAuthController extends Controller
             'veiculo.ano' => 'required|integer|min:1900|max:' . (date('Y') + 1),
 
             'password' => 'required|string|min:6|confirmed',
-        ]);
+        ]); */
 
         $cliente = Cliente::create([
             'nome' => $request->nome,
             'cpf' => $request->cpf,
             'rg' => $request->rg,
+            'email' => $request->email,
             'endereco' => $request->endereco,
             'password' => bcrypt($request->password),
         ]);
@@ -51,18 +52,13 @@ class ClienteAuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => config('jwt.ttl') * 60,
-            'cliente' => $cliente->load('veiculos')
+            'user' => $cliente->load('veiculos')
         ], 201);
     }
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|string|size:11',
-            'password' => 'required|string',
-        ]);
-
-        $cliente = Cliente::where('email', $request->cpf)->first();
+        $cliente = Cliente::where('email', $request->email)->first();
 
         if (!$cliente || !Hash::check($request->password, $cliente->password)) {
             return response()->json(['error' => 'Email ou senha incorretos.'], 401);
@@ -85,7 +81,7 @@ class ClienteAuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => config('jwt.ttl') * 60,
-            'cliente' => $cliente
+            'user' => $cliente
         ]);
     }
 }

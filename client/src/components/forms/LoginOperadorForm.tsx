@@ -20,7 +20,7 @@ export const LoginOperadorForm = () => {
         e.preventDefault();
 
         const result = await loginOperador.execute({
-            cpf: data.cpf.replace(/\D/g, ""), // remove pontos e traços
+            cpf: data.cpf,
             password: data.password,
         });
 

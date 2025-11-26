@@ -10,7 +10,7 @@ class Cliente extends Authenticatable implements JWTSubject
 {
     use HasFactory;
 
-    protected $fillable = ['nome', 'cpf', 'rg', 'endereco', 'password'];
+    protected $fillable = ['nome', 'cpf', 'email', 'rg', 'endereco', 'password'];
 
     public function veiculos()
     {

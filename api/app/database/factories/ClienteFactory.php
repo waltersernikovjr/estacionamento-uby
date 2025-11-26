@@ -14,6 +14,7 @@ class ClienteFactory extends Factory
         return [
             'nome' => fake()->name(),
             'cpf' => fake()->unique()->numerify('###########'),
+            'email' => fake()->unique()->safeEmail(),
             'rg' => fake()->unique()->numerify('#########'),
             'endereco' => fake()->streetAddress() . ', ' . fake()->city(),
             'password' => bcrypt('password'),
