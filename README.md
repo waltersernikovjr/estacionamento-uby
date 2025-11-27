@@ -34,6 +34,26 @@ docker-compose up -d
 
 > **💡 Dica:** Se encontrar erros de portas já em uso, execute `docker-compose down` seguido de `docker stop $(docker ps -aq)` para liberar todas as portas.
 
+### 🔧 O que acontece na primeira execução?
+
+Os containers estão configurados com **scripts de inicialização automática** (`docker-entrypoint.sh`):
+
+**Backend (Laravel):**
+- ✅ Copia `.env.example` → `.env` se não existir
+- ✅ Gera `APP_KEY` automaticamente
+- ✅ Aguarda MySQL estar pronto
+- ✅ Executa migrations automaticamente
+- ✅ Executa seeders (se database vazia)
+- ✅ Limpa cache e otimiza
+- ✅ Cria storage link
+
+**Chat Service:**
+- ✅ Copia `.env.example` → `.env` se não existir
+- ✅ Aguarda MySQL estar pronto
+- ✅ Inicia servidor WebSocket
+
+**Resultado:** Sistema 100% funcional após os containers rodarem! 🚀
+
 ## 📚 Documentação
 
 ### Setup e Instalação

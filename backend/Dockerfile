@@ -59,6 +59,10 @@ COPY --chown=laravel:laravel . .
 # Instalar dependências do Composer (apenas em build)
 RUN composer install --no-interaction --optimize-autoloader --no-dev || true
 
+# Copiar entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Configurar permissões
 RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R laravel:laravel /var/www/html/storage /var/www/html/bootstrap/cache \
@@ -69,5 +73,8 @@ USER laravel
 
 # Expor porta PHP-FPM
 EXPOSE 9000
+
+# Usar entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 CMD ["php-fpm"]
