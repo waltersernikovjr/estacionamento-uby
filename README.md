@@ -180,21 +180,24 @@ docker-compose exec backend php artisan test --testsuite=Unit
 ## 📝 Comandos Úteis
 
 ```bash
-# Ver logs
+# Ver logs dos containers
 docker-compose logs -f frontend
 docker-compose logs -f backend
+docker-compose logs -f chat
 
-# Rodar migrations
-docker-compose exec backend php artisan migrate
+# Acessar bash do container (se necessário)
+docker-compose exec backend sh
+docker-compose exec frontend sh
 
-# Rodar seeders
-docker-compose exec backend php artisan db:seed
-
-# Limpar cache
+# Limpar cache manualmente (raramente necessário)
 docker-compose exec backend php artisan cache:clear
+docker-compose exec backend php artisan config:clear
 
 # Parar todos os containers
 docker-compose down
+
+# Parar e remover volumes (⚠️ apaga banco de dados)
+docker-compose down -v
 
 # Rebuildar containers
 docker-compose up -d --build

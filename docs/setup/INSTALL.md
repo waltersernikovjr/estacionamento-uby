@@ -239,12 +239,13 @@ curl -X POST http://localhost:8000/api/v1/vehicles \
 # Parar todos os containers
 docker-compose down
 
-# Limpar volumes (⚠️ apaga dados)
+# Limpar volumes (⚠️ apaga dados - migrations/seeders rodam automaticamente ao resubir)
 docker-compose down -v
 
 # Rebuildar e iniciar
 docker-compose build --no-cache
 docker-compose up -d
+# ✅ Migrations e seeders executam automaticamente!
 ```
 
 ### Erro de permissão no Laravel
@@ -254,8 +255,13 @@ docker-compose exec backend chmod -R 777 storage bootstrap/cache
 
 ### Reset completo do banco de dados
 ```bash
+# Opção 1: Via comando artisan (manual)
 docker-compose exec backend php artisan migrate:fresh --seed
-docker-compose exec backend php artisan db:seed --class=TestUsersSeeder
+
+# Opção 2: Remover volumes (recomendado - setup automático)
+docker-compose down -v
+docker-compose up -d
+# ✅ Migrations e seeders rodam automaticamente!
 ```
 
 ### Ver logs de um container
@@ -300,9 +306,11 @@ docker-compose build
 docker-compose down
 docker-compose up -d
 
-# Rodar migrations
+# Rodar novas migrations (apenas se houver novas)
 docker-compose exec backend php artisan migrate
 ```
+
+> **💡 Nota:** Migrations iniciais e seeders rodam **automaticamente** na primeira execução!
 
 ---
 

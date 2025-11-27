@@ -85,24 +85,36 @@ Este arquivo contém as credenciais dos usuários de teste criados no sistema.
 
 ---
 
-## 🔄 Recriar Usuários
+## 🔄 Gerenciamento de Usuários
 
-Se precisar recriar os usuários de teste:
+### Recriar Usuários de Teste
+
+Os usuários são criados **automaticamente** na primeira execução. Se precisar recriá-los:
 
 ```bash
+# Recriar apenas os usuários de teste
 docker-compose exec backend php artisan db:seed --class=TestUsersSeeder
 ```
 
-Ou para resetar todo o banco e recriar tudo:
+### Resetar Banco Completamente
+
+Para resetar todo o banco e recriar tudo do zero:
 
 ```bash
+# Opção 1: Via comando artisan
 docker-compose exec backend php artisan migrate:fresh --seed
+
+# Opção 2: Remover volumes Docker (método recomendado)
+docker-compose down -v
+docker-compose up -d
+# ✅ Migrations e seeders rodarão automaticamente!
 ```
 
 ---
 
 ## 📝 Notas
 
+- ✅ **Setup automático:** Migrations e seeders executam na primeira inicialização
 - ✅ Todos os usuários já têm email verificado
 - ✅ As senhas são simples propositalmente (apenas para teste)
 - ✅ O sistema usa autenticação JWT via Laravel Sanctum
