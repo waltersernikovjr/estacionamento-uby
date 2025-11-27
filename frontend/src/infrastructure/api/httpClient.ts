@@ -54,6 +54,22 @@ httpClient.interceptors.response.use(
       localStorage.removeItem('auth_token');
       window.location.href = '/login';
     }
+
+    if (error.response?.status === 422 && error.response?.data?.errors) {
+      const validationErrors = error.response.data.errors;
+      const firstErrorField = Object.keys(validationErrors)[0];
+      const firstErrorMessage = validationErrors[firstErrorField][0];
+      
+      error.message = firstErrorMessage;
+      error.validationErrors = validationErrors;
+      
+      return Promise.reject(error);
+    }
+
+    if (error.response?.data?.message) {
+      error.message = error.response.data.message;
+      return Promise.reject(error);
+    }
     
     return Promise.reject(error);
   }

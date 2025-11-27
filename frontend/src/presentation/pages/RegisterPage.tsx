@@ -30,6 +30,27 @@ export function RegisterPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 11) {
+      setFormData({ ...formData, cpf: value });
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 11) {
+      setFormData({ ...formData, phone: value });
+    }
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 8) {
+      setFormData({ ...formData, zip_code: value });
+    }
+  };
+
   const handleCepBlur = async () => {
     if (formData.zip_code.length === 8 || formData.zip_code.length === 9) {
       setIsLoadingCep(true);
@@ -77,8 +98,19 @@ export function RegisterPage() {
           window.location.href = '/customer/dashboard';
         }
       }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao cadastrar';
+    } catch (err: any) {
+      let errorMessage = 'Erro ao cadastrar';
+      
+      if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        const firstError = Object.values(errors)[0];
+        errorMessage = Array.isArray(firstError) ? firstError[0] : String(firstError);
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -134,30 +166,32 @@ export function RegisterPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    CPF
+                    CPF <span className="text-xs text-gray-500">(apenas números)</span>
                   </label>
                   <input
                     type="text"
                     name="cpf"
                     value={formData.cpf}
-                    onChange={handleChange}
+                    onChange={handleCpfChange}
                     className="input-field"
-                    placeholder="000.000.000-00"
+                    placeholder="12345678901"
+                    maxLength={11}
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefone
+                    Telefone <span className="text-xs text-gray-500">(apenas números)</span>
                   </label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
+                    onChange={handlePhoneChange}
                     className="input-field"
-                    placeholder="(00) 00000-0000"
+                    placeholder="11999999999"
+                    maxLength={11}
                     required
                   />
                 </div>
@@ -220,16 +254,17 @@ export function RegisterPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  CEP
+                  CEP <span className="text-xs text-gray-500">(apenas números)</span>
                 </label>
                 <input
                   type="text"
                   name="zip_code"
                   value={formData.zip_code}
-                  onChange={handleChange}
+                  onChange={handleCepChange}
                   onBlur={handleCepBlur}
                   className="input-field"
-                  placeholder="00000-000"
+                  placeholder="00000000"
+                  maxLength={8}
                   required
                 />
                 {isLoadingCep && <p className="text-sm text-gray-500 mt-1">Buscando CEP...</p>}

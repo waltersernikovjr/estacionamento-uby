@@ -23,6 +23,19 @@ class OperatorAuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:operators'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:20'],
+        ], [
+            'name.required' => 'O nome é obrigatório',
+            'name.max' => 'O nome deve ter no máximo 255 caracteres',
+            'cpf.required' => 'O CPF é obrigatório',
+            'cpf.size' => 'O CPF deve ter 11 dígitos',
+            'cpf.unique' => 'Este CPF já está cadastrado',
+            'email.required' => 'O e-mail é obrigatório',
+            'email.email' => 'Digite um e-mail válido',
+            'email.unique' => 'Este e-mail já está cadastrado',
+            'password.required' => 'A senha é obrigatória',
+            'password.min' => 'A senha deve ter no mínimo 8 caracteres',
+            'password.confirmed' => 'As senhas não conferem',
+            'phone.max' => 'O telefone deve ter no máximo 20 caracteres',
         ]);
 
         $operator = Operator::create([
@@ -54,6 +67,10 @@ class OperatorAuthController extends Controller
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'O e-mail é obrigatório',
+            'email.email' => 'Digite um e-mail válido',
+            'password.required' => 'A senha é obrigatória',
         ]);
 
         $operator = Operator::where('email', $request->input('email'))->first();

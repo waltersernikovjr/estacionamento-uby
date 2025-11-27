@@ -61,6 +61,11 @@ final class EmailVerificationController extends Controller
         $request->validate([
             'email' => 'required|email',
             'type' => 'required|in:customer,operator'
+        ], [
+            'email.required' => 'O e-mail é obrigatório',
+            'email.email' => 'Digite um e-mail válido',
+            'type.required' => 'O tipo de usuário é obrigatório',
+            'type.in' => 'Tipo de usuário inválido. Deve ser customer ou operator',
         ]);
 
         $type = $request->input('type');

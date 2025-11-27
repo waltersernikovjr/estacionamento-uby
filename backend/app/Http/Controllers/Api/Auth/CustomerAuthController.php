@@ -30,6 +30,32 @@ class CustomerAuthController extends Controller
             'neighborhood' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'state' => ['required', 'string', 'size:2'],
+        ], [
+            'name.required' => 'O nome é obrigatório',
+            'name.max' => 'O nome deve ter no máximo 255 caracteres',
+            'email.required' => 'O e-mail é obrigatório',
+            'email.email' => 'Digite um e-mail válido',
+            'email.unique' => 'Este e-mail já está cadastrado',
+            'cpf.required' => 'O CPF é obrigatório',
+            'cpf.size' => 'O CPF deve ter 11 dígitos',
+            'cpf.unique' => 'Este CPF já está cadastrado',
+            'password.required' => 'A senha é obrigatória',
+            'password.min' => 'A senha deve ter no mínimo 8 caracteres',
+            'password.confirmed' => 'As senhas não conferem',
+            'phone.max' => 'O telefone deve ter no máximo 20 caracteres',
+            'zip_code.required' => 'O CEP é obrigatório',
+            'zip_code.max' => 'O CEP deve ter no máximo 9 caracteres',
+            'street.required' => 'A rua é obrigatória',
+            'street.max' => 'A rua deve ter no máximo 255 caracteres',
+            'number.required' => 'O número é obrigatório',
+            'number.max' => 'O número deve ter no máximo 20 caracteres',
+            'complement.max' => 'O complemento deve ter no máximo 255 caracteres',
+            'neighborhood.required' => 'O bairro é obrigatório',
+            'neighborhood.max' => 'O bairro deve ter no máximo 255 caracteres',
+            'city.required' => 'A cidade é obrigatória',
+            'city.max' => 'A cidade deve ter no máximo 255 caracteres',
+            'state.required' => 'O estado é obrigatório',
+            'state.size' => 'O estado deve ter 2 caracteres (ex: SP)',
         ]);
 
         $customer = Customer::create([
@@ -61,6 +87,10 @@ class CustomerAuthController extends Controller
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'O e-mail é obrigatório',
+            'email.email' => 'Digite um e-mail válido',
+            'password.required' => 'A senha é obrigatória',
         ]);
 
         $customer = Customer::where('email', $request->input('email'))->first();
