@@ -168,7 +168,7 @@
             <a href="{{ config('app.frontend_url', 'http://localhost:3000') }}/resend-verification" class="button">
                 Reenviar Email
             </a>
-            <a href="{{ config('app.frontend_url', 'http://localhost:3000') }}/login" class="button secondary">
+            <a href="{{ config('app.frontend_url') }}/login" class="button secondary">
                 Voltar ao Login
             </a>
         </div>

@@ -175,7 +175,7 @@
             Verificado em: {{ $verified_at }}
         </p>
 
-        <a href="{{ config('app.frontend_url', 'http://localhost:3000') }}/login" class="button">
+        <a href="{{ config('app.frontend_url') }}/login" class="button">
             Fazer Login
         </a>
 
