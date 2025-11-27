@@ -44,14 +44,14 @@ echo "${YELLOW}🗄️  Executando migrations...${NC}"
 php artisan migrate --force
 echo "${GREEN}✅ Migrations executadas!${NC}"
 
-# Executar seeders (apenas se database estiver vazia)
-TABLES=$(php artisan db:show --json | grep -o '"tables":[0-9]*' | grep -o '[0-9]*')
-if [ "$TABLES" -le 1 ]; then
+# Executar seeders (apenas se não houver usuários cadastrados)
+USER_COUNT=$(php artisan tinker --execute="echo \App\Infrastructure\Persistence\Models\User::count();" 2>/dev/null | tail -1)
+if [ -z "$USER_COUNT" ] || [ "$USER_COUNT" -eq 0 ]; then
     echo "${YELLOW}🌱 Executando seeders...${NC}"
     php artisan db:seed --force
     echo "${GREEN}✅ Seeders executados!${NC}"
 else
-    echo "${GREEN}✅ Database já possui dados.${NC}"
+    echo "${GREEN}✅ Database já possui dados ($USER_COUNT usuários).${NC}"
 fi
 
 # Limpar e otimizar cache
