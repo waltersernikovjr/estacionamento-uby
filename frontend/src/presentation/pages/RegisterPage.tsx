@@ -22,6 +22,7 @@ export function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   
   const setAuth = useAuthStore((state) => state.setAuth);
 
@@ -52,6 +53,7 @@ export function RegisterPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     if (formData.password !== formData.password_confirmation) {
       setError('As senhas não coincidem');
@@ -61,9 +63,18 @@ export function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const { user, token } = await authApi.register(formData);
-      setAuth(user, token);
-      window.location.href = '/customer/dashboard';
+      const response = await authApi.register(formData);
+      
+      if (response.requires_verification) {
+        setSuccessMessage(response.message || 'Cadastro realizado com sucesso! Verifique seu email.');
+        setTimeout(() => {
+          window.location.href = `/verify-email?email=${encodeURIComponent(formData.email)}`;
+        }, 2000);
+      } else {
+        const { user, token } = response;
+        setAuth(user, token);
+        window.location.href = '/customer/dashboard';
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao cadastrar';
       setError(errorMessage);
@@ -90,7 +101,17 @@ export function RegisterPage() {
               </div>
             )}
 
-            {/* Dados Pessoais */}
+            {successMessage && (
+              <div className="bg-green-50 border-2 border-green-200 text-green-700 px-4 py-3 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <svg className="h-5 w-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{successMessage}</span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-800">Dados Pessoais</h2>
               
