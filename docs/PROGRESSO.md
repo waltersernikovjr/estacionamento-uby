@@ -25,7 +25,7 @@
   - estacionamento-backend (PHP-FPM 8.3)
   - estacionamento-nginx (reverse proxy)
   - estacionamento-mysql (MySQL 8.0)
-  - estacionamento-redis (Redis 7)
+  - estacionamento-redis (Redis 7.4)
   - estacionamento-chat (Node.js + Socket.io)
   - estacionamento-mailhog (email testing)
 - [x] Nginx configurado na porta 8000

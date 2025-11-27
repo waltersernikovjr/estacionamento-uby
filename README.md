@@ -52,24 +52,29 @@ docker-compose up -d
 ## 🛠️ Stack Tecnológica
 
 ### Backend
-- **Laravel 11** - Framework PHP
+- **PHP 8.2** - Linguagem de programação
+- **Laravel 12** - Framework PHP
 - **MySQL 8.0** - Banco de dados
-- **Redis** - Cache e filas
+- **Redis 7.4** - Cache e filas
 - **Laravel Sanctum** - Autenticação
 - **Swagger/OpenAPI** - Documentação da API
 
 ### Frontend
-- **React 19** - Framework JavaScript
+- **React 19.2** - Framework JavaScript
 - **TypeScript 5.9** - Tipagem estática
 - **Vite 7.2** - Build tool com hot reload
-- **Tailwind CSS** - Estilização
-- **Zustand** - Gerenciamento de estado
+- **Tailwind CSS 3.4** - Estilização
+- **Zustand 5.0** - Gerenciamento de estado
+- **React Router 7.9** - Roteamento
+- **Socket.io Client 4.8.1** - WebSocket client
 
 ### Infraestrutura
 - **Docker & Docker Compose** - Containerização
-- **Node.js + Socket.io** - Chat em tempo real
-- **Nginx** - Web server
-- **MailHog** - Testes de email
+- **Node.js 20** - Runtime JavaScript
+- **Socket.io 4.7** - Chat em tempo real (server)
+- **Express 4.18** - Framework web Node.js
+- **Nginx 1.27** - Web server
+- **MailHog 1.0** - Testes de email
 
 ## 🏗️ Arquitetura
 
@@ -140,10 +145,10 @@ docker-compose exec backend php artisan test --testsuite=Unit
 | Serviço | Container | Porta | Descrição |
 |---------|-----------|-------|-----------|
 | Frontend | estacionamento-frontend | 3000 | React + Vite (hot reload) |
-| Backend API | estacionamento-backend | 8000 | Laravel 11 |
+| Backend API | estacionamento-backend | 8000 | Laravel 12 |
 | Chat Service | estacionamento-chat | 3001 | WebSocket (Socket.io) |
 | MySQL | estacionamento-mysql | 3307 | Banco de dados |
-| Redis | estacionamento-redis | 6380 | Cache |
+| Redis | estacionamento-redis | 6380 | Cache (Redis 7.4) |
 | MailHog | estacionamento-mailhog | 8025 | Interface de emails |
 | Nginx | estacionamento-nginx | 8000 | Proxy reverso |
 
@@ -207,7 +212,7 @@ docker-compose up -d --build
 
 ```
 estacionamento-uby/
-├── backend/           # Laravel 11 API
+├── backend/           # Laravel 12 API
 ├── frontend/          # React 19 + TypeScript
 ├── chat-service/      # Node.js WebSocket
 ├── nginx/             # Configuração Nginx
