@@ -46,6 +46,11 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
         return Payment::pending()->get();
     }
 
+    public function findByStatus(string $status): Collection
+    {
+        return Payment::where('status', $status)->get();
+    }
+
     public function getPaid(): Collection
     {
         return Payment::paid()->get();

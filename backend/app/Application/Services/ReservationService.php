@@ -6,6 +6,7 @@ namespace App\Application\Services;
 
 use App\Application\DTOs\Reservation\CreateReservationDTO;
 use App\Application\DTOs\Reservation\CompleteReservationDTO;
+use App\Domain\Contracts\Repositories\PaymentRepositoryInterface;
 use App\Domain\Contracts\Repositories\ReservationRepositoryInterface;
 use App\Infrastructure\Persistence\Models\Reservation;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ final class ReservationService
     public function __construct(
         private readonly ReservationRepositoryInterface $reservationRepository,
         private readonly ParkingSpotService $parkingSpotService,
+        private readonly PaymentRepositoryInterface $paymentRepository,
     ) {
     }
 
@@ -104,11 +106,11 @@ final class ReservationService
             throw new \InvalidArgumentException('Failed to complete reservation');
         }
 
-        \App\Infrastructure\Persistence\Models\Payment::create([
+        $this->paymentRepository->create([
             'reservation_id' => $id,
             'amount' => $totalAmount,
             'status' => 'paid',
-            'paid_at' => now(),
+            'paid_at' => Carbon::now(),
         ]);
 
         $this->parkingSpotService->markAsAvailable($reservation->parking_spot_id);

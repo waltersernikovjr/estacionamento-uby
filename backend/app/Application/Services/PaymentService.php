@@ -30,7 +30,7 @@ final class PaymentService
 
     public function findPending(): Collection
     {
-        return $this->paymentRepository->findByStatus('pending');
+        return $this->paymentRepository->getPending();
     }
 
     public function create(CreatePaymentDTO $dto): Payment
@@ -45,20 +45,20 @@ final class PaymentService
     public function update(int $id, UpdatePaymentDTO $dto): Payment
     {
         $payment = $this->findById($id);
-        
+
         if (!$payment) {
             throw new \InvalidArgumentException('Payment not found');
         }
 
         $this->paymentRepository->update($id, $dto->toArray());
-        
+
         return $this->findById($id);
     }
 
     public function markAsPaid(int $id): Payment
     {
         $payment = $this->findById($id);
-        
+
         if (!$payment) {
             throw new \InvalidArgumentException('Payment not found');
         }
@@ -78,7 +78,7 @@ final class PaymentService
     public function delete(int $id): bool
     {
         $payment = $this->findById($id);
-        
+
         if (!$payment) {
             throw new \InvalidArgumentException('Payment not found');
         }

@@ -53,4 +53,12 @@ final class EloquentVehicleRepository implements VehicleRepositoryInterface
             ->whereNull('deleted_at')
             ->exists();
     }
+
+    public function hasActiveReservations(int $vehicleId): bool
+    {
+        return Vehicle::find($vehicleId)
+            ?->reservations()
+            ->whereIn('status', ['pending', 'active'])
+            ->exists() ?? false;
+    }
 }

@@ -16,13 +16,13 @@ class CustomerFactory extends Factory
             'cpf' => fake()->numerify('###########'),
             'phone' => fake()->phoneNumber(),
             'password' => bcrypt('password'),
-            'zip_code' => fake()->postcode(),
-            'street' => fake()->streetName(),
-            'number' => fake()->buildingNumber(),
-            'complement' => fake()->optional()->secondaryAddress(),
-            'neighborhood' => fake()->citySuffix(),
-            'city' => fake()->city(),
-            'state' => fake()->stateAbbr(),
+            'address_zipcode' => fake()->numerify('########'),
+            'address_street' => fake()->streetName(),
+            'address_number' => fake()->buildingNumber(),
+            'address_complement' => fake()->optional()->secondaryAddress(),
+            'address_neighborhood' => fake()->citySuffix(),
+            'address_city' => fake()->city(),
+            'address_state' => fake()->stateAbbr(),
         ];
     }
 }

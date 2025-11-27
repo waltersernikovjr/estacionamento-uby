@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Application\DTOs\Reservation\CreateReservationDTO;
 use App\Application\Services\ParkingSpotService;
 use App\Application\Services\ReservationService;
+use App\Domain\Contracts\Repositories\PaymentRepositoryInterface;
 use App\Domain\Contracts\Repositories\ReservationRepositoryInterface;
 use App\Infrastructure\Persistence\Models\ParkingSpot;
 use App\Infrastructure\Persistence\Models\Reservation;
@@ -15,6 +16,7 @@ class ReservationServiceTest extends TestCase
 {
     private ReservationRepositoryInterface $repository;
     private ParkingSpotService $parkingSpotService;
+    private PaymentRepositoryInterface $paymentRepository;
     private ReservationService $service;
 
     protected function setUp(): void
@@ -23,7 +25,12 @@ class ReservationServiceTest extends TestCase
 
         $this->repository = $this->createMock(ReservationRepositoryInterface::class);
         $this->parkingSpotService = $this->createMock(ParkingSpotService::class);
-        $this->service = new ReservationService($this->repository, $this->parkingSpotService);
+        $this->paymentRepository = $this->createMock(PaymentRepositoryInterface::class);
+        $this->service = new ReservationService(
+            $this->repository,
+            $this->parkingSpotService,
+            $this->paymentRepository
+        );
     }
 
     public function test_creates_reservation_when_parking_spot_is_available(): void
@@ -198,6 +205,15 @@ class ReservationServiceTest extends TestCase
                     && $data['total_amount'] === 10.0;
             }))
             ->willReturn($completedReservation);
+
+        $this->paymentRepository
+            ->expects($this->once())
+            ->method('create')
+            ->with($this->callback(function ($data) {
+                return $data['reservation_id'] === 1
+                    && $data['amount'] === 10.0
+                    && $data['status'] === 'paid';
+            }));
 
         $this->parkingSpotService
             ->expects($this->once())

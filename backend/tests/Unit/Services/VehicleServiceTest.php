@@ -211,6 +211,12 @@ class VehicleServiceTest extends TestCase
 
         $this->repository
             ->expects($this->once())
+            ->method('hasActiveReservations')
+            ->with($vehicleId)
+            ->willReturn(false);
+
+        $this->repository
+            ->expects($this->once())
             ->method('delete')
             ->with($vehicleId)
             ->willReturn(true);

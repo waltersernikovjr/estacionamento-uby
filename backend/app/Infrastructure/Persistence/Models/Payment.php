@@ -26,6 +26,7 @@ class Payment extends Model
         'reservation_id',
         'amount',
         'hours_parked',
+        'payment_method',
         'status',
         'paid_at',
     ];
