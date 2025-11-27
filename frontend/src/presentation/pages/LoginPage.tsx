@@ -18,28 +18,34 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Tentar login como cliente primeiro
       let user, token;
+      let lastError: any = null;
       
       try {
         const customerResponse = await authApi.login({ email, password });
         user = customerResponse.user;
         token = customerResponse.token;
-      } catch (customerError) {
-        // Se falhar, tentar login como operador
+      } catch (customerError: any) {
+        lastError = customerError;
+        
         try {
           const operatorResponse = await authApi.operatorLogin({ email, password });
           user = operatorResponse.user;
           token = operatorResponse.token;
-        } catch (operatorError) {
-          // Se ambos falharem, lançar erro de credenciais inválidas
+        } catch (operatorError: any) {
+          const backendMessage = customerError?.response?.data?.message || 
+                                customerError?.response?.data?.errors?.email?.[0];
+          
+          if (backendMessage) {
+            throw new Error(backendMessage);
+          }
+          
           throw new Error('Email ou senha inválidos');
         }
       }
 
       setAuth(user, token);
       
-      // Redirecionar baseado no tipo de usuário
       if (user.type === 'customer') {
         navigate('/customer/dashboard', { replace: true });
       } else if (user.type === 'operator') {
@@ -47,8 +53,8 @@ export function LoginPage() {
       } else {
         throw new Error('Tipo de usuário desconhecido');
       }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
+    } catch (err: any) {
+      const errorMessage = err.message || 'Erro ao fazer login';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -69,7 +75,15 @@ export function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl">
-                {error}
+                <p>{error}</p>
+                {error.toLowerCase().includes('verifique seu email') && (
+                  <a 
+                    href={`/verify-email?email=${encodeURIComponent(email)}`}
+                    className="text-primary-600 hover:text-primary-700 font-medium underline block mt-2"
+                  >
+                    Reenviar email de verificação
+                  </a>
+                )}
               </div>
             )}
 
