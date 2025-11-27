@@ -15,10 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Chamar seeders na ordem correta
         $this->call([
             ParkingSpotSeeder::class,
-            // Adicionar outros seeders aqui conforme necessário
         ]);
     }
 }

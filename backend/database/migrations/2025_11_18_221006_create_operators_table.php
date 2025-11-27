@@ -21,7 +21,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            // Índices para buscas frequentes
             $table->index('email');
             $table->index('cpf');
         });
