@@ -32,15 +32,38 @@ Este comando irá:
 - ✅ Subir Nginx (porta 8000)
 - ✅ Subir Mailhog para testes de email (porta 8025)
 
-**⏱️ Aguarde aproximadamente 2 minutos** para todos os containers iniciarem corretamente.
+**⏱️ Aguarde todos os containers iniciarem.**
+
+### 🔧 O que acontece automaticamente na primeira execução?
+
+Os containers possuem **scripts de inicialização automática** (`docker-entrypoint.sh`):
+
+**Backend (Laravel):**
+- ✅ Copia `.env.example` → `.env` automaticamente
+- ✅ Gera `APP_KEY` automaticamente
+- ✅ Aguarda MySQL estar pronto
+- ✅ Executa **migrations** automaticamente (21 tabelas)
+- ✅ Executa **seeders** automaticamente (se database vazia):
+  - 1 operador (`operador@uby.com`)
+  - 1 cliente (`cliente@uby.com`)
+  - 43 vagas de estacionamento
+- ✅ Limpa cache e otimiza
+- ✅ Cria storage link
+
+**Chat Service:**
+- ✅ Copia `.env.example` → `.env` automaticamente
+- ✅ Aguarda MySQL estar pronto
+- ✅ Inicia servidor WebSocket
+
+**Resultado:** Sistema 100% funcional **sem nenhum comando manual**! 🎉
 
 ### 3. Verificar Status dos Containers
 
 ```bash
-docker ps
+docker-compose ps
 ```
 
-Você deve ver **7 containers rodando**:
+Você deve ver **7 containers rodando** com status **UP (healthy)**:
 - `estacionamento-frontend` - Frontend React (healthy)
 - `estacionamento-backend` - Backend Laravel (healthy)
 - `estacionamento-nginx` - Servidor Web (healthy)
@@ -49,26 +72,7 @@ Você deve ver **7 containers rodando**:
 - `estacionamento-chat` - WebSocket Chat
 - `estacionamento-mailhog` - Email testing
 
-### 4. Executar Migrations e Seeders
-
-```bash
-# Entrar no container do backend
-docker-compose exec backend bash
-
-# Rodar migrations
-php artisan migrate
-
-# Popular banco de dados com dados de exemplo
-php artisan db:seed
-
-# Criar usuários de teste
-php artisan db:seed --class=TestUsersSeeder
-
-# Sair do container
-exit
-```
-
-### 5. Verificar Instalação
+### 4. Verificar Instalação
 
 Acesse os seguintes URLs no navegador:
 
@@ -239,13 +243,15 @@ curl -X POST http://localhost:8000/api/v1/vehicles \
 # Parar todos os containers
 docker-compose down
 
-# Limpar volumes (⚠️ apaga dados - migrations/seeders rodam automaticamente ao resubir)
+# Limpar volumes (⚠️ apaga dados)
 docker-compose down -v
 
 # Rebuildar e iniciar
 docker-compose build --no-cache
 docker-compose up -d
-# ✅ Migrations e seeders executam automaticamente!
+
+# ✅ Migrations e seeders executam AUTOMATICAMENTE!
+# Aguarde 30 segundos e está pronto!
 ```
 
 ### Erro de permissão no Laravel
@@ -254,14 +260,19 @@ docker-compose exec backend chmod -R 777 storage bootstrap/cache
 ```
 
 ### Reset completo do banco de dados
-```bash
-# Opção 1: Via comando artisan (manual)
-docker-compose exec backend php artisan migrate:fresh --seed
 
-# Opção 2: Remover volumes (recomendado - setup automático)
+**Método recomendado (setup automático):**
+```bash
 docker-compose down -v
 docker-compose up -d
-# ✅ Migrations e seeders rodam automaticamente!
+
+# ✅ Migrations e seeders rodam AUTOMATICAMENTE!
+# Sem comandos manuais necessários!
+```
+
+**Método manual (se preferir):**
+```bash
+docker-compose exec backend php artisan migrate:fresh --seed
 ```
 
 ### Ver logs de um container
@@ -305,12 +316,11 @@ docker-compose build
 # Reiniciar
 docker-compose down
 docker-compose up -d
-
-# Rodar novas migrations (apenas se houver novas)
-docker-compose exec backend php artisan migrate
 ```
 
-> **💡 Nota:** Migrations iniciais e seeders rodam **automaticamente** na primeira execução!
+> **💡 Nota:** 
+> - Migrations iniciais e seeders rodam **automaticamente** na primeira execução!
+> - Se houver novas migrations após update, rode: `docker-compose exec backend php artisan migrate`
 
 ---
 
