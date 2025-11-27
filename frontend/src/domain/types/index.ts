@@ -29,7 +29,7 @@ export interface Address {
 }
 
 export type VehicleType = 'car' | 'motorcycle' | 'truck';
-export type ParkingSpotType = 'regular' | 'vip' | 'disabled'; // Tipos do backend
+export type ParkingSpotType = 'regular' | 'vip' | 'disabled';
 
 export interface Vehicle {
   id: number;

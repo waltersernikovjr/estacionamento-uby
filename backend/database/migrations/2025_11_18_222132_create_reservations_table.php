@@ -21,7 +21,6 @@ return new class extends Migration
             $table->enum('status', ['active', 'completed', 'cancelled'])->default('active');
             $table->timestamps();
 
-            // Índices
             $table->index('customer_id');
             $table->index('vehicle_id');
             $table->index('parking_spot_id');
