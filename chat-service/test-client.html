@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test - Cliente</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+        }
+        .container.login-mode {
+            justify-content: center;
+            align-items: center;
+        }
+        .status {
+            padding: 10px;
+            background: #333;
+            text-align: center;
+            font-size: 13px;
+            color: white;
+            border-radius: 20px 20px 0 0;
+            font-weight: 600;
+        }
+        .status.connected { background: #FF6A00; color: white; }
+        .status.disconnected { background: #333; color: white; }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .message.me {
+            justify-content: flex-end;
+        }
+        .message .bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        .message.me .bubble {
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.other .bubble {
+            background: #f5f5f5;
+            border: 2px solid #333;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+        .message .info {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .typing {
+            padding: 8px 20px;
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+            min-height: 30px;
+        }
+        .input-area {
+            padding: 15px 20px;
+            background: white;
+            border-radius: 0 0 20px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #FF6A00;
+        }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #FF6A00 0%, #CC5500 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .login-form {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+        .login-form h3 {
+            margin-bottom: 30px;
+            color: #FF6A00;
+            font-weight: 700;
+        }
+        .login-form input {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .login-form button {
+            width: 100%;
+        }
+        .client-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container login-mode" id="container">
+        <div class="client-badge" id="clientBadge"></div>
+        <div id="loginForm" class="login-form">
+            <h3>💬 Chat Cliente</h3>
+            <input type="email" id="email" placeholder="Email (ex: maria@example.com)" value="maria@example.com">
+            <input type="password" id="password" placeholder="Senha" value="senha123">
+            <button onclick="login()">Fazer Login</button>
+        </div>
+
+        <div id="chatArea" style="display: none; width: 100%; height: 100%; flex-direction: column;">
+            <div class="status" id="status">Desconectado</div>
+            <div class="messages" id="messages"></div>
+            <div class="typing" id="typing"></div>
+            <div class="input-area">
+                <div class="input-group">
+                    <input type="text" id="messageInput" placeholder="Digite sua mensagem..." onkeypress="handleKeyPress(event)" maxlength="250">
+                    <button onclick="sendMessage()">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let sessionId = null;
+        let userType = 'customer';
+        let userId = null;
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const apiUrl = window.location.origin.replace(':8000', '') + ':8000';
+                const response = await fetch(`${apiUrl}/api/v1/customers/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    let errorMessage = 'Email ou senha incorretos. Por favor, tente novamente.';
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        try {
+                            const errorData = await response.json();
+                            errorMessage = errorData.message || errorMessage;
+                        } catch (e) {}
+                    }
+                    
+                    alert(errorMessage);
+                    return;
+                }
+
+                const data = await response.json();
+                const token = data.token;
+                userId = data.user.id;
+
+                document.getElementById('clientBadge').textContent = data.user.name.toUpperCase();
+
+                document.getElementById('container').classList.remove('login-mode');
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('chatArea').style.display = 'flex';
+
+                connectToChat(token);
+            } catch (error) {
+                console.error('Erro no login:', error);
+                alert('Não foi possível conectar ao servidor. Por favor, tente novamente mais tarde.');
+            }
+        }
+
+        function connectToChat(token) {
+            socket = io(window.location.origin, {
+                auth: { token },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                updateStatus('Conectado ✅', 'connected');
+                addSystemMessage('Conectado ao chat! Criando sessão com operador...');
+                
+                socket.emit('create-session', { operatorId: 1 });
+            });
+
+            socket.on('session-created', ({ sessionId: id, existing }) => {
+                sessionId = id;
+                addSystemMessage(existing ? 'Retomando sessão existente...' : 'Nova sessão criada!');
+                socket.emit('join-session', { sessionId });
+            });
+
+            socket.on('session-joined', ({ messages }) => {
+                addSystemMessage(`Entrou na sessão #${sessionId}`);
+                messages.forEach(msg => {
+                    addMessage(msg.message, msg.sender_type === userType, msg.created_at);
+                });
+            });
+
+            socket.on('new-message', (data) => {
+                const isMe = data.senderType === userType && data.senderId === userId;
+                addMessage(data.message, isMe, data.createdAt);
+            });
+
+            socket.on('user-typing', ({ isTyping }) => {
+                const typingEl = document.getElementById('typing');
+                typingEl.textContent = isTyping ? 'Operador está digitando...' : '';
+            });
+
+            socket.on('disconnect', () => {
+                updateStatus('Desconectado ❌', 'disconnected');
+            });
+
+            socket.on('error', ({ message }) => {
+                alert('Erro: ' + message);
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message || !sessionId) return;
+
+            socket.emit('send-message', { sessionId, message });
+            input.value = '';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            } else {
+                socket.emit('typing', { sessionId, isTyping: true });
+                setTimeout(() => {
+                    socket.emit('typing', { sessionId, isTyping: false });
+                }, 1000);
+            }
+        }
+
+        function addMessage(text, isMe, timestamp) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isMe ? 'me' : 'other'}`;
+            
+            const time = new Date(timestamp).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="bubble">
+                    ${text}
+                    <div class="info">${time}</div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.style.textAlign = 'center';
+            messageDiv.style.color = '#999';
+            messageDiv.style.fontSize = '12px';
+            messageDiv.style.margin = '10px 0';
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateStatus(text, className) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = text;
+            statusEl.className = `status ${className}`;
+        }
+    </script>
+</body>
+</html>

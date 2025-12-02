@@ -1,0 +1,174 @@
+services:
+  # Backend Laravel + PHP-FPM
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        USER_ID: 1000
+        GROUP_ID: 1000
+    container_name: estacionamento-backend
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/storage:/var/www/html/storage
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=estacionamento_uby
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - estacionamento-network
+    healthcheck:
+      test: ["CMD", "php", "-r", "echo 'OK';"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: estacionamento-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+      - VITE_CHAT_URL=http://localhost:3001
+    depends_on:
+      - backend
+      - chat
+    networks:
+      - estacionamento-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # Nginx Web Server (Backend)
+  nginx:
+    image: nginx:alpine
+    container_name: estacionamento-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend/public:/var/www/html/public
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./chat-service:/var/www/chat
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - estacionamento-network
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/run/nginx.pid && kill -0 $$(cat /var/run/nginx.pid) || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: estacionamento-mysql
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: estacionamento_uby
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - estacionamento-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache/Queue
+  redis:
+    image: redis:7-alpine
+    container_name: estacionamento-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - estacionamento-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MailHog - Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: estacionamento-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - estacionamento-network
+
+  chat:
+    build:
+      context: ./chat-service
+      dockerfile: Dockerfile
+    container_name: estacionamento-chat
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      HOST: 0.0.0.0
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-key}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: laravel
+      DB_PASSWORD: secret
+      DB_NAME: estacionamento_uby
+      CORS_ORIGIN: http://localhost:3000,http://localhost:8000
+      LOG_LEVEL: debug
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - estacionamento-network
+    volumes:
+      - ./chat-service:/app
+      - /app/node_modules
+
+networks:
+  estacionamento-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local

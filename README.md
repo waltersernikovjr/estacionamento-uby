@@ -1,133 +1,277 @@
-# Desafio Full Stack - Estacionamento da Uby
+# 🅿️ Estacionamento Uby - Sistema de Gestão
 
-A Uby está vendo uma oportunidade de implementar um estacionamento digital em Muzambinho, e para isso precisa de um sistema web e back-end para controle das vagas e expiração do estacionamento.
+Sistema completo de gerenciamento de estacionamento com backend Laravel, frontend React e chat em tempo real.
 
-A equipe de análise colheu as informações de como a diretoria espera que o sistema funcione e encaminhou à equipe de desenvolvimento para começar o desenvolvimento da aplicação.
+## 📋 Sobre o Projeto
 
-## Resumo da análise feita pelo Jefferson, um dos analistas envolvidos no projeto
+Sistema desenvolvido para gestão completa de estacionamento, incluindo:
+- ✅ Cadastro e autenticação de clientes e operadores
+- ✅ Gerenciamento de veículos e vagas
+- ✅ Sistema de reservas e pagamentos
+- ✅ Chat em tempo real entre cliente e operador
+- ✅ Notificações por email
+- ✅ Dashboard interativo para clientes e operadores
 
-Esta aplicação deverá representar um estacionamento digital. Ele envolverá inicialmente um operador do estacionamento e clientes para estacionar.
+## 🚀 Quick Start
 
-### Cadastro do Operador
+```bash
+# Clone o repositório
+git clone https://github.com/ranielisilveira/estacionamento-uby.git
+cd estacionamento-uby
 
-O cadastro do operador do estacionamento deve conter:
+# ⚠️ IMPORTANTE: Pare outros containers Docker para evitar conflitos de portas
+docker stop $(docker ps -aq) 2>/dev/null || true
 
-* Nome
-* CPF
-* Email
+# Inicie todos os serviços
+docker-compose up -d
 
-O operador deverá poder cadastrar as vagas disponíveis e suas especificações, como:
+# Aguarde ~30 segundos e acesse:
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000
+# Swagger Docs: http://localhost:8000/api/documentation
+# MailHog: http://localhost:8025
+```
 
-* Número da vaga
-* Preço
-* Dimensões da vaga
+> **💡 Dica:** Se encontrar erros de portas já em uso, execute `docker-compose down` seguido de `docker stop $(docker ps -aq)` para liberar todas as portas.
 
-### Cadastro do Cliente
+### 🔧 O que acontece na primeira execução?
 
-Ao chegar um novo cliente, deverá ser possível realizar um cadastro que deve conter:
+Os containers estão configurados com **scripts de inicialização automática** (`docker-entrypoint.sh`):
 
-* Nome
-* CPF
-* RG
-* Endereço
-* Dados do carro:
+**Backend (Laravel):**
+- ✅ Copia `.env.example` → `.env` se não existir
+- ✅ Gera `APP_KEY` automaticamente
+- ✅ Aguarda MySQL estar pronto
+- ✅ Executa migrations automaticamente
+- ✅ Executa seeders (se database vazia)
+- ✅ Limpa cache e otimiza
+- ✅ Cria storage link
 
-  * Placa
-  * Modelo
-  * Cor
-  * Ano
+**Chat Service:**
+- ✅ Copia `.env.example` → `.env` se não existir
+- ✅ Aguarda MySQL estar pronto
+- ✅ Inicia servidor WebSocket
 
-Após o login e confirmação via email do cadastro, deverão ser apresentadas as vagas disponíveis para ele.
+**Resultado:** Sistema 100% funcional após os containers rodarem! 🚀
 
-Caso não existam vagas disponíveis, o cliente poderá entrar em contato com o operador via **chat**, para saber quando será liberada uma vaga.
+## 📚 Documentação
 
-Ao voltar para buscar o veículo, o cliente deverá visualizar o preço final do pagamento.
+### Setup e Instalação
+- **[Guia de Instalação Completo](docs/setup/INSTALL.md)** - Passo a passo detalhado
+- **[Credenciais de Teste](docs/setup/CREDENTIALS.md)** - Usuários para teste
+
+### Desenvolvimento
+- **[Guia de Desenvolvimento](docs/development/DEVELOPMENT.md)** - Como desenvolver
+- **[Progresso do Projeto](docs/PROGRESSO.md)** - Status de desenvolvimento
+- **[Checklist de Entrega](docs/CHECKLIST.md)** - Validação de requisitos
+
+### Arquitetura e Técnica
+- **[Estrutura do Backend](docs/architecture/backend-structure.md)** - Clean Architecture
+- **[Schema do Banco](docs/database/schema.md)** - Modelagem completa
+- **[API REST](docs/API.md)** - Endpoints documentados
+- **[Sistema de Email](docs/EMAIL_VERIFICATION_SYSTEM.md)** - Verificação de email
+
+### Resumo Executivo
+- **[Resumo do Projeto](docs/RESUMO-EXECUTIVO.md)** - Visão geral completa
+
+## 🛠️ Stack Tecnológica
+
+### Backend
+- **PHP 8.2** - Linguagem de programação
+- **Laravel 12** - Framework PHP
+- **MySQL 8.0** - Banco de dados
+- **Redis 7.4** - Cache e filas
+- **Laravel Sanctum** - Autenticação
+- **Swagger/OpenAPI** - Documentação da API
+
+### Frontend
+- **React 19.2** - Framework JavaScript
+- **TypeScript 5.9** - Tipagem estática
+- **Vite 7.2** - Build tool com hot reload
+- **Tailwind CSS 3.4** - Estilização
+- **Zustand 5.0** - Gerenciamento de estado
+- **React Router 7.9** - Roteamento
+- **Socket.io Client 4.8.1** - WebSocket client
+
+### Infraestrutura
+- **Docker & Docker Compose** - Containerização
+- **Node.js 20** - Runtime JavaScript
+- **Socket.io 4.7** - Chat em tempo real (server)
+- **Express 4.18** - Framework web Node.js
+- **Nginx 1.27** - Web server
+- **MailHog 1.0** - Testes de email
+
+## 🏗️ Arquitetura
+
+### Backend (Clean Architecture)
+```
+app/
+├── Domain/          # Entidades e contratos
+├── Application/     # Casos de uso e serviços
+├── Infrastructure/  # Implementações (repos, mail, etc)
+└── Presentation/    # Controllers e API Resources
+```
+
+### Frontend (Clean Architecture)
+```
+src/
+├── domain/          # Tipos e lógica de negócio
+├── application/     # Stores e casos de uso
+├── infrastructure/  # APIs e clientes HTTP
+└── presentation/    # Componentes React
+```
+
+## 🔑 Usuários de Teste
+
+### Operador
+```
+Email: operador@uby.com
+Senha: senha123
+```
+
+### Cliente
+```
+Email: cliente@uby.com
+Senha: senha123
+```
+
+## 📊 Endpoints Principais
+
+### Autenticação
+- `POST /api/v1/customers/login` - Login cliente
+- `POST /api/v1/operators/login` - Login operador
+- `POST /api/v1/customers/register` - Registro
+
+### Vagas e Reservas
+- `GET /api/v1/parking-spots-available` - Vagas disponíveis
+- `POST /api/v1/reservations` - Criar reserva
+- `GET /api/v1/reservations` - Minhas reservas
+
+### Veículos
+- `GET /api/v1/vehicles` - Listar veículos
+- `POST /api/v1/vehicles` - Cadastrar veículo
+
+📖 **Documentação completa:** http://localhost:8000/api/documentation
+
+## �� Testes
+
+### Backend - Testes Unitários
+```bash
+docker-compose exec backend php artisan test --testsuite=Unit
+```
+
+**46 testes unitários** com cobertura de:
+- Services (ParkingSpot, Payment, Reservation, Vehicle)
+- Cálculo de preços
+- Validações de negócio
+
+## 🐳 Containers e Portas
+
+| Serviço | Container | Porta | Descrição |
+|---------|-----------|-------|-----------|
+| Frontend | estacionamento-frontend | 3000 | React + Vite (hot reload) |
+| Backend API | estacionamento-backend | 8000 | Laravel 12 |
+| Chat Service | estacionamento-chat | 3001 | WebSocket (Socket.io) |
+| MySQL | estacionamento-mysql | 3307 | Banco de dados |
+| Redis | estacionamento-redis | 6380 | Cache (Redis 7.4) |
+| MailHog | estacionamento-mailhog | 8025 | Interface de emails |
+| Nginx | estacionamento-nginx | 8000 | Proxy reverso |
+
+## 📝 Comandos Úteis
+
+```bash
+# Ver logs dos containers
+docker-compose logs -f frontend
+docker-compose logs -f backend
+docker-compose logs -f chat
+
+# Acessar bash do container (se necessário)
+docker-compose exec backend sh
+docker-compose exec frontend sh
+
+# Limpar cache manualmente (raramente necessário)
+docker-compose exec backend php artisan cache:clear
+docker-compose exec backend php artisan config:clear
+
+# Parar todos os containers
+docker-compose down
+
+# Parar e remover volumes (⚠️ apaga banco de dados)
+docker-compose down -v
+
+# Rebuildar containers
+docker-compose up -d --build
+```
+
+## 🔒 Segurança
+
+- ✅ Senhas hasheadas com bcrypt
+- ✅ Autenticação via Laravel Sanctum
+- ✅ Verificação obrigatória de email
+- ✅ CORS configurado
+- ✅ Rate limiting em rotas sensíveis
+- ✅ SQL Injection protection (Eloquent)
+- ✅ XSS protection
+
+## 🎯 Funcionalidades Implementadas
+
+### Cliente
+- [x] Cadastro com verificação de email
+- [x] Login/Logout
+- [x] Dashboard com estatísticas
+- [x] Gerenciamento de veículos
+- [x] Visualização de vagas disponíveis
+- [x] Criação de reservas
+- [x] Histórico de reservas
+- [x] Chat com operador
+- [x] Cálculo automático de pagamento
+
+### Operador
+- [x] Login/Logout
+- [x] Dashboard com estatísticas
+- [x] Gerenciamento de vagas
+- [x] Visualização de todas as reservas
+- [x] Busca por placa
+- [x] Finalização de reservas
+- [x] Chat com clientes
+- [x] Observações em reservas
+
+## 📦 Estrutura do Projeto
+
+```
+estacionamento-uby/
+├── backend/           # Laravel 12 API
+├── frontend/          # React 19 + TypeScript
+├── chat-service/      # Node.js WebSocket
+├── nginx/             # Configuração Nginx
+├── docs/              # Documentação completa
+│   ├── setup/         # Guias de instalação
+│   ├── development/   # Guias de desenvolvimento
+│   ├── architecture/  # Documentação técnica
+│   ├── database/      # Schema e modelagem
+│   └── api/           # Documentação de APIs
+└── docker-compose.yml # Orquestração dos containers
+```
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto é proprietário e foi desenvolvido para fins acadêmicos.
+
+## 👤 Autor
+
+**Ranieli Silveira**
+- GitHub: [@ranielisilveira](https://github.com/ranielisilveira)
 
 ---
 
-## Requisitos para o Desenvolvimento
-
-### Docker
-
-**Conteinerização:**
-
-* Criar um Dockerfile para o backend (Laravel), outro para o frontend (React) e outro para o serviço de chat (Node).
-* Utilizar **docker-compose** para orquestrar os containers (backend, frontend e banco de dados).
-
-### Banco de Dados
-
-* Utilizar **MySQL** como banco de dados principal.
-* Garantir que o banco esteja rodando em um container.
-
----
-
-## Backend (API)
-
-Requisitos:
-
-* PHP com **Laravel**
-* Confirmação de cadastro via email
-
-**Pontos adicionais:**
-
-* Busca em API externa para validar CEP e auto preenchimento
-* Sistema de cache para otimizar buscas
-
----
-
-## Front-end
-
-* JavaScript com **React**
-* Autenticação com **JWT**
-
-**Ponto adicional:**
-
-* Login com Google
-
----
-
-## Chat
-
-* Implementado com **WebSocket**
-* Nova API desenvolvida em **Node.js**
-
----
-
-## Critérios de Avaliação
-
-* Correto funcionamento dos endpoints
-* Correto funcionamento do front-end
-* Tratamento de erros
-* Implementação de padrões de projeto (Design Patterns, SOLID, etc.)
-* Documentação dos endpoints
-* Código limpo e organizado
-* Modelagem do banco de dados
-
----
-
-## Entrega
-
-A prova poderá ser entregue até: **28/11/2025 às 23:59:59**
-
-### Como entregar a prova
-
-Antes de começar o desenvolvimento:
-
-1. Faça um **fork** do repositório do avaliador.
-2. Faça um **clone** do repositório forkeado no seu ambiente de desenvolvimento.
-3. Após terminar o desenvolvimento, **submeta sua prova** ao repositório forkeado.
-4. **Abra uma Pull Request** solicitando a inclusão do seu código ao repositório do avaliador.
-
-**Resumo:**
-
-* Fork
-* Clone
-* Desenvolvimento
-* Push para o Fork
-* Pull Request para o repositório do avaliador
-
-Seguindo estes passos não tem como errar, mas caso algo aconteça, contacte o seu avaliador!
-
----
-
-**Boa sorte! Aguardamos pela sua prova 😄**
+**Desenvolvido com ❤️ em Gravataí/RS - Brasil**  
+**Data:** Novembro 2025  
+**Versão:** 1.0.0

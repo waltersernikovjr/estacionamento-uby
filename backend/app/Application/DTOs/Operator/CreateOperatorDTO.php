@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\DTOs\Operator;
+
+final readonly class CreateOperatorDTO
+{
+    public function __construct(
+        public string $name,
+        public string $email,
+        public string $password,
+        public ?string $phone = null,
+    ) {
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => $this->password,
+            'phone' => $this->phone,
+        ];
+    }
+}
